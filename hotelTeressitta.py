@@ -36,8 +36,9 @@ def accionBoton():
     if (botonVariable.get()=="Guardar"):
         crear()
     else:
-        pass
-    
+        print("print)")
+
+    botonVariable.set("Guardar")
     setearForms()
 
 def crear():
@@ -53,10 +54,8 @@ def actualizar():
     fechaIngreso.set("12/12/19")
     fechaSalida.set("12/12/20")
 
-
 root = Tk()
 root.title("Hotel Teressitta")
-
 
 #Variables
 nombre=StringVar()
@@ -70,9 +69,9 @@ botonVariable.set("Guardar")
 
 #Se declaran los Frames
 marco = ttk.Frame(root, padding=10)
-formulario = ttk.LabelFrame(marco,text="Formulario cliente",padding=10)
-listaDatos = ttk.LabelFrame(marco,text="Lista de clientes",padding=10)
-herramientas = ttk.LabelFrame(marco,text="Herramientas",padding=10)
+formulario = ttk.LabelFrame(marco,height=700,text="Formulario cliente",padding=10)
+listaDatos = ttk.LabelFrame(marco,height=700,text="Lista de clientes",padding=10)
+herramientas = ttk.LabelFrame(marco,height=700,text="Herramientas",padding=10)
 
 #formularios
 formularioNombre = ttk.Entry(formulario,textvariable=nombre)
