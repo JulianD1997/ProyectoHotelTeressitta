@@ -1,24 +1,62 @@
+import sqlite3
 from tkinter import *
 from tkinter import ttk
 from tkcalendar import DateEntry
+
+# funciones
+def conexionSQL():
+    miConexion = sqlite3.connect("HotelTeressitta")
+    cursor= miConexion.cursor()
+    try:
+        cursor.execute('''--sql
+            CREATE TABLE Clientes(
+                ID  INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
+                nombre VARCHAR(75),
+                apellido VARCHAR(75)
+                DNI INTEGER(15) UNIQUE NOT NULL,
+                habitacion INTEGER(6) UNIQUE NOT NULL,
+                fechaDeIngreso DATE NOT NULL,
+                fechaDESalida DATE NOT NULL,
+            );'''
+        )
+    except:
+        print("La tabla ya existe")
+    finally:
+        miConexion.commit()
+
 def setearForms():
     nombre.set("")
     apellido.set("")
     dni.set(0)
     habitacion.set(0)
-    fechaIngreso.set("")
-    fechaSalida.set("")
-    
+    fechaIngreso.set("//")
+    fechaSalida.set("//")
+
 def accionBoton():
     if (botonVariable.get()=="Guardar"):
-        print("Nombre :",nombre.get(),"Apellido :",apellido.get(),"DNI :",dni.get(),"Habitacion :",habitacion.get(),"Fecha de Ingreso :",fechaIngreso.get(),"Fecha de Salida :",fechaSalida.get())
+        crear()
     else:
-        print("actualizar")
+        pass
     
     setearForms()
 
+def crear():
+    botonVariable.set("Guardar")
+    print("Nombre :",nombre.get(),"Apellido :",apellido.get(),"DNI :",dni.get(),"Habitacion :",habitacion.get(),"Fecha de Ingreso :",fechaIngreso.get(),"Fecha de Salida :",fechaSalida.get())
+
+def actualizar():
+    botonVariable.set("Actualizar")
+    nombre.set("nombre")
+    apellido.set("apellido")
+    dni.set(104545)
+    habitacion.set(45454)
+    fechaIngreso.set("12/12/19")
+    fechaSalida.set("12/12/20")
+
+
 root = Tk()
 root.title("Hotel Teressitta")
+
 
 #Variables
 nombre=StringVar()
@@ -46,8 +84,8 @@ formularioFechaSalida = DateEntry(formulario,selectmode="dia",textvariable=fecha
 
 #botones
 botonAccion=ttk.Button(formulario,textvariable=botonVariable,padding= ("10 5 10 5"),command=accionBoton)
-botonCrear=ttk.Button(herramientas,text="Crear",padding= ("10 5 10 5"))
-botonActualizar= ttk.Button(herramientas,text="Actualizar",padding= ("10 5 10 5"))
+botonCrear=ttk.Button(herramientas,text="Crear",padding= ("10 5 10 5"),)
+botonActualizar= ttk.Button(herramientas,text="Actualizar",padding= ("10 5 10 5"),command=actualizar)
 botonEliminar= ttk.Button(herramientas,text="Eliminar",padding= ("10 5 10 5"))
 
 # etiquetas
@@ -61,7 +99,7 @@ etiquetaFechaSalida = ttk.Label(formulario, text="Fechas de salida")
 # se empaquetan los elementos
 marco.grid(column=0, row=0,sticky=(N,S,E,W))
 formulario.grid(column=0, row=0)
-listaDatos.grid(column=0, row=1)
+listaDatos.grid(column=0, row=1,pady=5)
 herramientas.grid(column=0, row=2)
 
 etiquetaNombre.grid(column=0, row =0,sticky=SW, padx=5)
