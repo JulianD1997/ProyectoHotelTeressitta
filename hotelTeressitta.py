@@ -6,10 +6,12 @@ from datetime import datetime
 import traceback
 
 # funciones
-def conexionSQL(consulta, parametros=()):
+
+def conexionSQL(consulta, parametros=()): # se abre la conexion a la base de datos y recibe las consultas que se desean realizar
     miConexion = sqlite3.connect("HotelTeressitta")
     cursor = miConexion.cursor()
-    try:
+    # se utiliza el try, except, finally para que no de error cuando la tabla ya este creada
+    try: 
         cursor.execute(consulta, parametros)
         return cursor.fetchall()
     except Exception:
@@ -17,7 +19,7 @@ def conexionSQL(consulta, parametros=()):
     finally:
         miConexion.commit()
 
-def crearTabla():
+def crearTabla(): # se crea la consulta para crear la tabla
     consulta = ('''--sql
         CREATE TABLE Clientes(
             ID  INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
@@ -31,11 +33,7 @@ def crearTabla():
                 )
     conexionSQL(consulta)
 
-def validarDatos():
-    print(len(nombre.get())!=0 and len(apellido.get())!=0 and dni.get()!=0 and habitacion.get()!=0)
-    return len(nombre.get())!=0 and len(apellido.get())!=0 and dni.get()!=0 and habitacion.get()!=0
-
-def crearCliente():
+def crearCliente(): # se crea la consulta para crear clientes nuevos
     if validarDatos():
         consulta = """--sql
             INSERT INTO Clientes
@@ -51,7 +49,7 @@ def crearCliente():
         print("todos los datos son requeridos")
     leerCliente()
 
-def leerCliente():
+def leerCliente(): # se crea consulta para listar los clientes
     #se borrar los clientes del arbol
     clientes= arbol.get_children()
     for cliente in clientes:
@@ -65,7 +63,7 @@ def leerCliente():
     for cliente in datos:
         arbol.insert("","end",text=cliente[3],values=(cliente[1],cliente[2],cliente[4],cliente[5],cliente[6]))
     
-def modificarCliente():
+def modificarCliente(): # se crea consulta para modificar un cliente
     if validarDatos :
         consulta = """--sql
             UPDATE Clientes
@@ -77,8 +75,8 @@ def modificarCliente():
                 fechaDeSalida = ?,
             where DNI= ?;
         """
-        ingreso = datetime.strptime(fechaIngreso.get(), "%d/%m/%y").date()
-        salida = datetime.strptime(fechaIngreso.get(), "%d/%m/%y").date()
+        ingreso = datetime.strptime(fechaIngreso.get(), "%d/%m/%y").date() # se convierte un string en un dato DATE
+        salida = datetime.strptime(fechaIngreso.get(), "%d/%m/%y").date() # se convierte un string en un dato DATE
 
         parametros = (nombre.get(), apellido.get(), dni.get(), habitacion.get(),ingreso,salida)
         conexionSQL(consulta,parametros)
@@ -86,7 +84,7 @@ def modificarCliente():
     else:
         print("Todos los datos deben ser ingresados")
 
-def borrarCliente():
+def borrarCliente(): # se crea consulta para borrar un cliente
     consulta= """--sql
         DELETE FROM Clientes
         WHERE DNI=?;
@@ -95,7 +93,7 @@ def borrarCliente():
     conexionSQL(consulta, parametros)
     leerCliente()
 
-def setearForms():
+def setearForms(): # se deja en blanco los formularios
     nombre.set("")
     apellido.set("")
     dni.set(0)
@@ -105,7 +103,7 @@ def setearForms():
     fechaIngreso.set(fecha)
     fechaSalida.set(fecha)
 
-def accionBoton():
+def accionBoton(): # se crea esta funcion para el bonton variable "Guardar o Actualizar"
 
     if (botonVariable.get() == "Guardar"):
         crearCliente()
@@ -114,6 +112,13 @@ def accionBoton():
 
     botonVariable.set("Guardar")
     setearForms()
+
+def datosCliente():
+    cliente= arbol.focus()
+    print("")
+def validarDatos(): # se validan que los formularios no esten vacios
+    print(len(nombre.get())!=0 and len(apellido.get())!=0 and dni.get()!=0 and habitacion.get()!=0)
+    return len(nombre.get())!=0 and len(apellido.get())!=0 and dni.get()!=0 and habitacion.get()!=0
 
 root = Tk()
 root.title("Hotel Teressitta")
