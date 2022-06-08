@@ -4,6 +4,7 @@ from tkinter import ttk
 from tkcalendar import DateEntry
 from datetime import datetime
 import traceback
+import re
 
 # funciones
 def conexionSQL(consulta, parametros=()):
@@ -19,12 +20,12 @@ def conexionSQL(consulta, parametros=()):
 
 def crearTabla():
     consulta = ('''--sql
-        CREATE TABLE Clientes(
+        CREATE TABLE IF NOT EXISTS Clientes(
             ID  INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
-            nombre VARCHAR(75),
-            apellido VARCHAR(75),
+            nombre VARCHAR(75) NOT NULL,
+            apellido VARCHAR(75) NOT NULL,
             DNI INTEGER(15) UNIQUE NOT NULL,
-            habitacion INTEGER(6) UNIQUE NOT NULL,
+            habitacion INTEGER(6) NOT NULL,
             fechaDeIngreso DATE NOT NULL,
             fechaDESalida DATE NOT NULL
         );'''
@@ -32,8 +33,10 @@ def crearTabla():
     conexionSQL(consulta)
 
 def validarDatos():
-    print(len(nombre.get())!=0 and len(apellido.get())!=0 and dni.get()!=0 and habitacion.get()!=0)
-    return len(nombre.get())!=0 and len(apellido.get())!=0 and dni.get()!=0 and habitacion.get()!=0
+    print(len(nombre.get())!=0 and len(apellido.get())!=0
+          and dni.get()!=0 and habitacion.get()!=0)
+    return len(nombre.get())!=0 and len(apellido.get())!=0\
+           and dni.get()!=0 and habitacion.get()!=0
 
 def crearCliente():
     if validarDatos():
@@ -44,7 +47,8 @@ def crearCliente():
         ingreso = datetime.strptime(fechaIngreso.get(), '%d/%m/%y').date()
         salida = datetime.strptime(fechaIngreso.get(), '%d/%m/%y').date()
         
-        parametros = (nombre.get(), apellido.get(), dni.get(), habitacion.get(),ingreso,salida)
+        parametros = (nombre.get(), apellido.get(), dni.get(),
+                      habitacion.get(), ingreso, salida)
         conexionSQL(consulta,parametros)
         print("Cliente guardado correctamente")
     else:
@@ -63,8 +67,10 @@ def leerCliente():
     datos=conexionSQL(consulta)
     print(datos)
     for cliente in datos:
-        arbol.insert("","end",text=cliente[3],values=(cliente[1],cliente[2],cliente[4],cliente[5],cliente[6]))
-    
+        arbol.insert("", "end", text=cliente[3],
+                     values=(cliente[1], cliente[2], cliente[4],
+                             cliente[5], cliente[6]))
+
 def modificarCliente():
     if validarDatos :
         consulta = """--sql
@@ -80,8 +86,9 @@ def modificarCliente():
         ingreso = datetime.strptime(fechaIngreso.get(), "%d/%m/%y").date()
         salida = datetime.strptime(fechaIngreso.get(), "%d/%m/%y").date()
 
-        parametros = (nombre.get(), apellido.get(), dni.get(), habitacion.get(),ingreso,salida)
-        conexionSQL(consulta,parametros)
+        parametros = (nombre.get(), apellido.get(), dni.get(),
+                      habitacion.get(), ingreso, salida)
+        conexionSQL(consulta, parametros)
         leerCliente()
     else:
         print("Todos los datos deben ser ingresados")
@@ -149,13 +156,15 @@ formularioFechaSalida = DateEntry(
     formulario, selectmode="dia", textvariable=fechaSalida)
 
 # botones
-botonAccion = ttk.Button(formulario, textvariable=botonVariable, padding=(
-    "10 5 10 5"), command=accionBoton)
-botonCrear = ttk.Button(herramientas, text="Crear", padding=("10 5 10 5"),command=lambda: botonVariable.set("Guardar"))
-botonActualizar = ttk.Button(
-    herramientas, text="Actualizar", padding=("10 5 10 5"),command=lambda: botonVariable.set("Actualizar"))
-botonEliminar = ttk.Button(
-    herramientas, text="Eliminar", padding=("10 5 10 5"),command=borrarCliente)
+botonAccion = ttk.Button(formulario, textvariable=botonVariable,
+                         padding=("10 5 10 5"), command=accionBoton)
+botonCrear = ttk.Button(herramientas, text="Crear", padding=("10 5 10 5"),
+                        command=lambda: botonVariable.set("Guardar"))
+botonActualizar = ttk.Button(herramientas, text="Actualizar",
+                             padding=("10 5 10 5"),
+                             command=lambda: botonVariable.set("Actualizar"))
+botonEliminar = ttk.Button(herramientas, text="Eliminar",
+                           padding=("10 5 10 5"), command=borrarCliente)
 
 # etiquetas
 etiquetaNombre = ttk.Label(formulario, text="Nombre")
@@ -197,8 +206,8 @@ botonEliminar.grid(column=2, row=0, sticky=W, padx=20)
 # Lista de clientes
 arbol = ttk.Treeview(listaDatos, columns=5)
 leerCliente()
-arbol['columns'] = ('nombre', 'apellido',
-                    'habitacion', 'fecha ingreso', 'fecha salida')
+arbol['columns'] = ('nombre', 'apellido', 'habitacion',
+                    'fecha ingreso', 'fecha salida')
 
 arbol.grid(column=0, row=0)
 arbol.column('#0', width=100, minwidth=10)
