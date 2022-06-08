@@ -5,66 +5,74 @@ from tkcalendar import DateEntry
 from datetime import datetime
 import traceback
 
-# funciones
+import re
 
-def conexionSQL(consulta, parametros=()): # se abre la conexion a la base de datos y recibe las consultas que se desean realizar
-    miConexion = sqlite3.connect("HotelTeressitta")
-    cursor = miConexion.cursor()
-    # se utiliza el try, except, finally para que no de error cuando la tabla ya este creada
-    try: 
+# Funciones
+def conexion_SQL(consulta, parametros=()):
+    mi_conexion = sqlite3.connect("HotelTeressitta")
+    cursor = mi_conexion.cursor()
+    try:
         cursor.execute(consulta, parametros)
         return cursor.fetchall()
     except Exception:
         traceback.print_exc()
     finally:
-        miConexion.commit()
+        mi_conexion.commit()
 
-def crearTabla(): # se crea la consulta para crear la tabla
+def crear_tabla():
     consulta = ('''--sql
-        CREATE TABLE Clientes(
+        CREATE TABLE IF NOT EXISTS Clientes(
             ID  INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
-            nombre VARCHAR(75),
-            apellido VARCHAR(75),
-            DNI INTEGER(15) UNIQUE NOT NULL,
-            habitacion INTEGER(6) UNIQUE NOT NULL,
+            nombre VARCHAR(75) NOT NULL,
+            apellido VARCHAR(75) NOT NULL,
+            DNI INTEGER(15) NOT NULL,
+            habitacion INTEGER(6) NOT NULL,
             fechaDeIngreso DATE NOT NULL,
             fechaDESalida DATE NOT NULL
         );'''
                 )
-    conexionSQL(consulta)
+    conexion_SQL(consulta)
 
-def crearCliente(): # se crea la consulta para crear clientes nuevos
-    if validarDatos():
+def validar_datos():
+    return len(nombre.get()) != 0 and len(apellido.get()) != 0\
+           and dni.get() != 0 and habitacion.get() != 0
+
+def crear_cliente():
+    if validar_datos():
         consulta = """--sql
             INSERT INTO Clientes
-            values(NULL,?,?,?,?,?,?);
+            values(NULL, ?, ?, ?, ?, ?, ?);
         """
         ingreso = datetime.strptime(fechaIngreso.get(), '%d/%m/%y').date()
         salida = datetime.strptime(fechaIngreso.get(), '%d/%m/%y').date()
         
-        parametros = (nombre.get(), apellido.get(), dni.get(), habitacion.get(),ingreso,salida)
-        conexionSQL(consulta,parametros)
+        parametros = (nombre.get(), apellido.get(), dni.get(),
+                      habitacion.get(), ingreso, salida)
+        conexion_SQL(consulta, parametros)
         print("Cliente guardado correctamente")
+
     else:
         print("todos los datos son requeridos")
-    leerCliente()
 
-def leerCliente(): # se crea consulta para listar los clientes
-    #se borrar los clientes del arbol
-    clientes= arbol.get_children()
+    leer_cliente()
+
+def leer_cliente():
+    # Se borrar los clientes del arbol
+    clientes = arbol.get_children()
     for cliente in clientes:
         arbol.delete(cliente)
     
-    consulta= ("""--sql
+    consulta = ("""--sql
         SELECT * FROM Clientes ORDER BY apellido ASC;
     """)
-    datos=conexionSQL(consulta)
-    print(datos)
+    datos = conexion_SQL(consulta)
     for cliente in datos:
-        arbol.insert("","end",text=cliente[3],values=(cliente[1],cliente[2],cliente[4],cliente[5],cliente[6]))
-    
-def modificarCliente(): # se crea consulta para modificar un cliente
-    if validarDatos :
+        arbol.insert("", "end", text=cliente[3],
+                     values=(cliente[1], cliente[2], cliente[4],
+                             cliente[5], cliente[6]))
+
+def modificar_cliente():
+    if validar_datos:
         consulta = """--sql
             UPDATE Clientes
             SET nombre = ?,
@@ -73,58 +81,51 @@ def modificarCliente(): # se crea consulta para modificar un cliente
                 habitacion = ?,
                 fechaDeIngreso = ?,
                 fechaDeSalida = ?,
-            where DNI= ?;
+            where ID = ?;
         """
-        ingreso = datetime.strptime(fechaIngreso.get(), "%d/%m/%y").date() # se convierte un string en un dato DATE
-        salida = datetime.strptime(fechaIngreso.get(), "%d/%m/%y").date() # se convierte un string en un dato DATE
-
-        parametros = (nombre.get(), apellido.get(), dni.get(), habitacion.get(),ingreso,salida)
-        conexionSQL(consulta,parametros)
-        leerCliente()
+        ingreso = datetime.strptime(fechaIngreso.get(), "%d/%m/%y").date()
+        salida = datetime.strptime(fechaIngreso.get(), "%d/%m/%y").date()
+        parametros = (nombre.get(), apellido.get(), dni.get(),
+                      habitacion.get(), ingreso, salida)
+        conexion_SQL(consulta, parametros)
+        leer_cliente()
     else:
         print("Todos los datos deben ser ingresados")
 
-def borrarCliente(): # se crea consulta para borrar un cliente
-    consulta= """--sql
+def borrar_cliente():
+    consulta = """--sql
         DELETE FROM Clientes
-        WHERE DNI=?;
+        WHERE ID = ?;
     """
-    parametros=()
-    conexionSQL(consulta, parametros)
-    leerCliente()
+    ############
+    parametros = ()
+    conexion_SQL(consulta, parametros)
+    leer_cliente()
 
-def setearForms(): # se deja en blanco los formularios
+def setear_forms():
     nombre.set("")
     apellido.set("")
     dni.set(0)
     habitacion.set(0)
     hoy = datetime.today().date()
-    fecha=str(hoy.strftime('%d/%m/%y'))
+    fecha = str(hoy.strftime('%d/%m/%y'))
     fechaIngreso.set(fecha)
     fechaSalida.set(fecha)
 
-def accionBoton(): # se crea esta funcion para el bonton variable "Guardar o Actualizar"
-
-    if (botonVariable.get() == "Guardar"):
-        crearCliente()
+def accion_boton():
+    if botonVariable.get() == "Guardar":
+        crear_cliente()
     else:
-        modificarCliente()
+        modificar_cliente()
 
     botonVariable.set("Guardar")
-    setearForms()
-
-def datosCliente():
-    cliente= arbol.focus()
-    print("")
-def validarDatos(): # se validan que los formularios no esten vacios
-    print(len(nombre.get())!=0 and len(apellido.get())!=0 and dni.get()!=0 and habitacion.get()!=0)
-    return len(nombre.get())!=0 and len(apellido.get())!=0 and dni.get()!=0 and habitacion.get()!=0
+    setear_forms()
 
 root = Tk()
 root.title("Hotel Teressitta")
 
 # Variables
-crearTabla()
+crear_tabla()
 nombre = StringVar()
 apellido = StringVar()
 dni = IntVar()
@@ -154,13 +155,15 @@ formularioFechaSalida = DateEntry(
     formulario, selectmode="dia", textvariable=fechaSalida)
 
 # botones
-botonAccion = ttk.Button(formulario, textvariable=botonVariable, padding=(
-    "10 5 10 5"), command=accionBoton)
-botonCrear = ttk.Button(herramientas, text="Crear", padding=("10 5 10 5"),command=lambda: botonVariable.set("Guardar"))
-botonActualizar = ttk.Button(
-    herramientas, text="Actualizar", padding=("10 5 10 5"),command=lambda: botonVariable.set("Actualizar"))
-botonEliminar = ttk.Button(
-    herramientas, text="Eliminar", padding=("10 5 10 5"),command=borrarCliente)
+botonAccion = ttk.Button(formulario, textvariable=botonVariable,
+                         padding="10 5 10 5", command=accion_boton)
+botonCrear = ttk.Button(herramientas, text="Crear", padding="10 5 10 5",
+                        command=lambda: botonVariable.set("Guardar"))
+botonActualizar = ttk.Button(herramientas, text="Actualizar",
+                             padding="10 5 10 5",
+                             command=lambda: botonVariable.set("Actualizar"))
+botonEliminar = ttk.Button(herramientas, text="Eliminar",
+                           padding="10 5 10 5", command=borrar_cliente)
 
 # etiquetas
 etiquetaNombre = ttk.Label(formulario, text="Nombre")
@@ -171,56 +174,43 @@ etiquetaFechaIngreso = ttk.Label(formulario, text="Fecha de Ingreso")
 etiquetaFechaSalida = ttk.Label(formulario, text="Fechas de salida")
 
 # se empaquetan los elementos
-marco.grid(column=0, row=0, sticky=(N, S, E, W))
+marco.grid(column=0, row=0)
 formulario.grid(column=0, row=0)
 listaDatos.grid(column=0, row=1, pady=5)
 herramientas.grid(column=0, row=2)
-
 etiquetaNombre.grid(column=0, row=0, sticky=SW, padx=5)
-formularioNombre.grid(column=0, row=1, sticky=(W), padx=5)
-
+formularioNombre.grid(column=0, row=1, sticky=W, padx=5)
 etiquetaApellido.grid(column=1, row=0, sticky=W, padx=5)
-formularioApellido.grid(column=1, row=1, sticky=(W), padx=5)
-
+formularioApellido.grid(column=1, row=1, sticky=W, padx=5)
 etiquetaDNI.grid(column=2, row=0, sticky=W, padx=5)
-formularioDNI.grid(column=2, row=1, sticky=(W), padx=5)
-
+formularioDNI.grid(column=2, row=1, sticky=W, padx=5)
 etiquetaHabitacion.grid(column=3, row=0, sticky=W, padx=5)
-formularioHabitacion.grid(column=3, row=1, sticky=(W), padx=5)
-
+formularioHabitacion.grid(column=3, row=1, sticky=W, padx=5)
 etiquetaFechaIngreso.grid(column=4, row=0, sticky=W, padx=5)
-formularioFechaIngreso.grid(column=4, row=1, sticky=(W), padx=5)
-
+formularioFechaIngreso.grid(column=4, row=1, sticky=W, padx=5)
 etiquetaFechaSalida.grid(column=5, row=0, sticky=W, padx=5)
-formularioFechaSalida.grid(column=5, row=1, sticky=(W), padx=5)
-
+formularioFechaSalida.grid(column=5, row=1, sticky=W, padx=5)
 botonAccion.grid(column=5, row=2, sticky=W, pady=10)
 botonCrear.grid(column=0, row=0, sticky=W, padx=20)
 botonActualizar.grid(column=1, row=0, sticky=W, padx=20)
 botonEliminar.grid(column=2, row=0, sticky=W, padx=20)
 
 # Lista de clientes
-arbol = ttk.Treeview(listaDatos, columns=5)
-leerCliente()
-arbol['columns'] = ('nombre', 'apellido',
-                    'habitacion', 'fecha ingreso', 'fecha salida')
-
+arbol = ttk.Treeview(listaDatos)
+leer_cliente()
+arbol['columns'] = ('nombre', 'apellido', 'habitacion',
+                    'fecha ingreso', 'fecha salida')
 arbol.grid(column=0, row=0)
 arbol.column('#0', width=100, minwidth=10)
 arbol.heading('#0', text='DNI')
-
 arbol.column('nombre', width=120, minwidth=10)
 arbol.heading('nombre', text='Nombre')
-
 arbol.column('apellido', width=120, minwidth=10)
 arbol.heading('apellido', text='Apellido')
-
 arbol.column('habitacion', width=100, minwidth=10)
 arbol.heading('habitacion', text='Habitacion')
-
 arbol.column('fecha ingreso', width=100, minwidth=10)
 arbol.heading('fecha ingreso', text='Fecha ingreso')
-
 arbol.column('fecha salida', width=100, minwidth=10)
 arbol.heading('fecha salida', text='Fecha Salida')
 
