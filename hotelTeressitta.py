@@ -43,8 +43,8 @@ def crear_cliente():
             INSERT INTO Clientes
             values(NULL, ?, ?, ?, ?, ?, ?);
         """
-        ingreso = datetime.strptime(fechaIngreso.get(), '%d/%m/%y').date()
-        salida = datetime.strptime(fechaIngreso.get(), '%d/%m/%y').date()
+        ingreso = datetime.strptime(fecha_ingreso.get(), '%d/%m/%y').date()
+        salida = datetime.strptime(fecha_ingreso.get(), '%d/%m/%y').date()
         
         parametros = (nombre.get(), apellido.get(), dni.get(),
                       habitacion.get(), ingreso, salida)
@@ -83,8 +83,8 @@ def modificar_cliente():
                 fechaDeSalida = ?,
             where ID = ?;
         """
-        ingreso = datetime.strptime(fechaIngreso.get(), "%d/%m/%y").date()
-        salida = datetime.strptime(fechaIngreso.get(), "%d/%m/%y").date()
+        ingreso = datetime.strptime(fecha_ingreso.get(), "%d/%m/%y").date()
+        salida = datetime.strptime(fecha_ingreso.get(), "%d/%m/%y").date()
         parametros = (nombre.get(), apellido.get(), dni.get(),
                       habitacion.get(), ingreso, salida)
         conexion_SQL(consulta, parametros)
@@ -109,16 +109,16 @@ def setear_forms():
     habitacion.set(0)
     hoy = datetime.today().date()
     fecha = str(hoy.strftime('%d/%m/%y'))
-    fechaIngreso.set(fecha)
-    fechaSalida.set(fecha)
+    fecha_ingreso.set(fecha)
+    fecha_salida.set(fecha)
 
 def accion_boton():
-    if botonVariable.get() == "Guardar":
+    if boton_variable.get() == "Guardar":
         crear_cliente()
     else:
         modificar_cliente()
 
-    botonVariable.set("Guardar")
+    boton_variable.set("Guardar")
     setear_forms()
 
 root = Tk()
@@ -130,73 +130,75 @@ nombre = StringVar()
 apellido = StringVar()
 dni = IntVar()
 habitacion = IntVar()
-fechaIngreso = StringVar()
-fechaSalida = StringVar()
-botonVariable = StringVar()
-botonVariable.set("Guardar")
+fecha_ingreso = StringVar()
+fecha_salida = StringVar()
+boton_variable = StringVar()
+boton_variable.set("Guardar")
 
 # Se declaran los Frames
 marco = ttk.Frame(root, padding=10)
 formulario = ttk.LabelFrame(
     marco, height=700, text="Formulario cliente", padding=10)
-listaDatos = ttk.LabelFrame(
+lista_datos = ttk.LabelFrame(
     marco, height=700, text="Lista de clientes", padding=10)
 herramientas = ttk.LabelFrame(
     marco, height=700, text="Herramientas", padding=10)
 
 # formularios
-formularioNombre = ttk.Entry(formulario, textvariable=nombre)
-formularioApellido = ttk.Entry(formulario, textvariable=apellido)
-formularioDNI = ttk.Entry(formulario, textvariable=dni)
-formularioHabitacion = ttk.Entry(formulario, textvariable=habitacion)
-formularioFechaIngreso = DateEntry(
-    formulario, selectmode="dia", textvariable=fechaIngreso)
-formularioFechaSalida = DateEntry(
-    formulario, selectmode="dia", textvariable=fechaSalida)
+formulario_nombre = ttk.Entry(formulario, textvariable=nombre)
+formulario_apellido = ttk.Entry(formulario, textvariable=apellido)
+formulario_DNI = ttk.Entry(formulario, textvariable=dni)
+formulario_habitacion = ttk.Entry(formulario, textvariable=habitacion)
+formulario_fecha_ingreso = DateEntry(
+    formulario, selectmode="dia", textvariable=fecha_ingreso)
+formulario_fecha_salida = DateEntry(
+    formulario, selectmode="dia", textvariable=fecha_salida)
 
 # botones
-botonAccion = ttk.Button(formulario, textvariable=botonVariable,
+boton_accion = ttk.Button(formulario, textvariable=boton_variable,
                          padding="10 5 10 5", command=accion_boton)
-botonCrear = ttk.Button(herramientas, text="Crear", padding="10 5 10 5",
-                        command=lambda: botonVariable.set("Guardar"))
-botonActualizar = ttk.Button(herramientas, text="Actualizar",
+boton_crear = ttk.Button(herramientas, text="Crear", padding="10 5 10 5",
+                        command=lambda: boton_variable.set("Guardar"))
+boton_actualizar = ttk.Button(herramientas, text="Actualizar",
                              padding="10 5 10 5",
-                             command=lambda: botonVariable.set("Actualizar"))
-botonEliminar = ttk.Button(herramientas, text="Eliminar",
+                             command=lambda: boton_variable.set("Actualizar"))
+boton_eliminar = ttk.Button(herramientas, text="Eliminar",
                            padding="10 5 10 5", command=borrar_cliente)
 
 # etiquetas
-etiquetaNombre = ttk.Label(formulario, text="Nombre")
-etiquetaApellido = ttk.Label(formulario, text="Apellido")
-etiquetaDNI = ttk.Label(formulario, text="DNI")
-etiquetaHabitacion = ttk.Label(formulario, text="Habitacion")
-etiquetaFechaIngreso = ttk.Label(formulario, text="Fecha de Ingreso")
-etiquetaFechaSalida = ttk.Label(formulario, text="Fechas de salida")
+etiqueta_nombre = ttk.Label(formulario, text="Nombre")
+etiqueta_apellido = ttk.Label(formulario, text="Apellido")
+etiqueta_DNI = ttk.Label(formulario, text="DNI")
+etiqueta_habitacion = ttk.Label(formulario, text="Habitacion")
+etiqueta_fecha_ingreso = ttk.Label(formulario, text="Fecha de Ingreso")
+etiqueta_fecha_salida = ttk.Label(formulario, text="Fechas de salida")
 
 # se empaquetan los elementos
 marco.grid(column=0, row=0)
 formulario.grid(column=0, row=0)
-listaDatos.grid(column=0, row=1, pady=5)
+lista_datos.grid(column=0, row=1, pady=5)
 herramientas.grid(column=0, row=2)
-etiquetaNombre.grid(column=0, row=0, sticky=SW, padx=5)
-formularioNombre.grid(column=0, row=1, sticky=W, padx=5)
-etiquetaApellido.grid(column=1, row=0, sticky=W, padx=5)
-formularioApellido.grid(column=1, row=1, sticky=W, padx=5)
-etiquetaDNI.grid(column=2, row=0, sticky=W, padx=5)
-formularioDNI.grid(column=2, row=1, sticky=W, padx=5)
-etiquetaHabitacion.grid(column=3, row=0, sticky=W, padx=5)
-formularioHabitacion.grid(column=3, row=1, sticky=W, padx=5)
-etiquetaFechaIngreso.grid(column=4, row=0, sticky=W, padx=5)
-formularioFechaIngreso.grid(column=4, row=1, sticky=W, padx=5)
-etiquetaFechaSalida.grid(column=5, row=0, sticky=W, padx=5)
-formularioFechaSalida.grid(column=5, row=1, sticky=W, padx=5)
-botonAccion.grid(column=5, row=2, sticky=W, pady=10)
-botonCrear.grid(column=0, row=0, sticky=W, padx=20)
-botonActualizar.grid(column=1, row=0, sticky=W, padx=20)
-botonEliminar.grid(column=2, row=0, sticky=W, padx=20)
+
+etiqueta_nombre.grid(column=0, row=0, sticky=SW, padx=5)
+formulario_nombre.grid(column=0, row=1, sticky=W, padx=5)
+etiqueta_apellido.grid(column=1, row=0, sticky=W, padx=5)
+formulario_apellido.grid(column=1, row=1, sticky=W, padx=5)
+etiqueta_DNI.grid(column=2, row=0, sticky=W, padx=5)
+formulario_DNI.grid(column=2, row=1, sticky=W, padx=5)
+etiqueta_habitacion.grid(column=3, row=0, sticky=W, padx=5)
+formulario_habitacion.grid(column=3, row=1, sticky=W, padx=5)
+etiqueta_fecha_ingreso.grid(column=4, row=0, sticky=W, padx=5)
+formulario_fecha_ingreso.grid(column=4, row=1, sticky=W, padx=5)
+etiqueta_fecha_salida.grid(column=5, row=0, sticky=W, padx=5)
+formulario_fecha_salida.grid(column=5, row=1, sticky=W, padx=5)
+
+boton_accion.grid(column=5, row=2, sticky=W, pady=10)
+boton_crear.grid(column=0, row=0, sticky=W, padx=20)
+boton_actualizar.grid(column=1, row=0, sticky=W, padx=20)
+boton_eliminar.grid(column=2, row=0, sticky=W, padx=20)
 
 # Lista de clientes
-arbol = ttk.Treeview(listaDatos)
+arbol = ttk.Treeview(lista_datos)
 leer_cliente()
 arbol['columns'] = ('nombre', 'apellido', 'habitacion',
                     'fecha ingreso', 'fecha salida')
