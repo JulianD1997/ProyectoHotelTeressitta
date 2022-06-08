@@ -4,7 +4,7 @@ from tkinter import ttk
 from tkcalendar import DateEntry
 from datetime import datetime
 import traceback
-
+import re
 
 # Funciones
 def conexionSQL(consulta, parametros=()):
