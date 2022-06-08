@@ -5,8 +5,6 @@ from tkcalendar import DateEntry
 from datetime import datetime
 import traceback
 
-import re
-
 # Funciones
 def conexion_SQL(consulta, parametros=()):
     mi_conexion = sqlite3.connect("HotelTeressitta")
@@ -67,8 +65,8 @@ def leer_cliente():
     """)
     datos = conexion_SQL(consulta)
     for cliente in datos:
-        arbol.insert("", "end", text=cliente[3],
-                     values=(cliente[1], cliente[2], cliente[4],
+        arbol.insert("", "end", text=cliente[0],
+                     values=(cliente[1], cliente[2],cliente[3], cliente[4],
                              cliente[5], cliente[6]))
 
 def modificar_cliente():
@@ -200,15 +198,17 @@ boton_eliminar.grid(column=2, row=0, sticky=W, padx=20)
 # Lista de clientes
 arbol = ttk.Treeview(lista_datos)
 leer_cliente()
-arbol['columns'] = ('nombre', 'apellido', 'habitacion',
-                    'fecha ingreso', 'fecha salida')
+arbol['columns'] = ('nombre', 'apellido','DNI', 'habitacion',
+                    'fecha ingreso', 'fecha salida',)
 arbol.grid(column=0, row=0)
-arbol.column('#0', width=100, minwidth=10)
-arbol.heading('#0', text='DNI')
+arbol.column('#0', width=50, minwidth=10)
+arbol.heading('#0', text='ID')
 arbol.column('nombre', width=120, minwidth=10)
 arbol.heading('nombre', text='Nombre')
 arbol.column('apellido', width=120, minwidth=10)
 arbol.heading('apellido', text='Apellido')
+arbol.column('DNI', width=100, minwidth=10)
+arbol.heading('DNI', text='DNI')
 arbol.column('habitacion', width=100, minwidth=10)
 arbol.heading('habitacion', text='Habitacion')
 arbol.column('fecha ingreso', width=100, minwidth=10)
