@@ -4,6 +4,7 @@ from tkinter import ttk
 from pytest import Item
 from tkcalendar import DateEntry
 from datetime import datetime
+from tkinter import messagebox
 import traceback
 
 """
@@ -12,8 +13,6 @@ import traceback
     del cliente, el numero de habitacion donde se va a hospedar
     el dia que ingreso y el dia de salida.
 """
-
-
 global id_cliente
 global habitaciones_hotel
 habitaciones_hotel = [101,102,103,104,201,202,203,204,301,302,303,304]
@@ -27,6 +26,7 @@ def conexion_SQL(consulta, parametros=()):
         return cursor.fetchall()
     except Exception:
         traceback.print_exc()
+        return False
     finally:
         mi_conexion.commit()
 
@@ -44,7 +44,7 @@ def crear_tabla():
                 )
     conexion_SQL(consulta)
 
-def validar_datos(): # validar que los formularios no esten vacios.
+def validar_datos():# Validar que los formularios no esten vacios.
     return len(nombre.get()) != 0 and len(apellido.get()) != 0\
            and dni.get() != 0 and habitacion.get() != 0
 
@@ -60,16 +60,19 @@ def crear_cliente():
         parametros = (nombre.get(), apellido.get(), dni.get(),
                       habitacion.get(), ingreso, salida)
         print(parametros)
-        conexion_SQL(consulta, parametros)
-        print("Cliente guardado correctamente")
+        datos = conexion_SQL(consulta, parametros)
+        if datos is not False:
+            messagebox.showinfo("Crear Cliente","EL cliente fue creado correctamente")
+
+        else : messagebox.showinfo("Crear Cliente","Hubo un error, el cliente no fue guardado")
 
     else:
-        print("todos los datos son requeridos")
+        messagebox.showinfo("Crear Cliente","Datos faltantes")
     leer_cliente()
     habitaciones_disponibles()
 
 def leer_cliente():
-    # Se borrar todos los datos del arbol
+    # Se borran todos los datos del arbol
     clientes = arbol.get_children()
     for cliente in clientes:
         arbol.delete(cliente)
@@ -99,26 +102,33 @@ def modificar_cliente():
         salida = datetime.strptime(fecha_salida.get(),'%Y-%m-%d').date()
         parametros = (nombre.get(), apellido.get(), dni.get(),
                       habitacion.get(), ingreso, salida,id_cliente)
-        conexion_SQL(consulta, parametros)
-    else:
-        print("Todos los datos deben ser ingresados")
+        datos = conexion_SQL(consulta, parametros)
+        if datos is not False:
+            messagebox.showinfo("Modificar Cliente","El cliente fue modificado correctamente")
+        else: messagebox.showinfo("Crear Cliente","Hubo un error, eL cliente seleccionado no fue modificado")
+    else: messagebox.showinfo("Modificar Cliente","Datos faltantes")
     leer_cliente()
     habitaciones_disponibles()
 
 def borrar_cliente():
     global id_cliente
     cliente = arbol.item(arbol.focus())
-    id_cliente = cliente['text']
-    consulta = """--sql
-        DELETE FROM Clientes
-        WHERE ID = ?;
-    """
-    parametros = (id_cliente,)
-    conexion_SQL(consulta,parametros)
+    respuesta = messagebox.askyesno("Borrar cliente","¿Desea borrar el cliente?")
+    if respuesta:
+        id_cliente = cliente['text']
+        consulta = """--sql
+            DELETE FROM Clientes
+            WHERE ID = ?;
+        """
+        parametros = (id_cliente,)
+        datos = conexion_SQL(consulta,parametros)
+        if datos is not False:
+            messagebox.showinfo("Borrar Cliente","EL cliente fue borrado correctamente")
+        else : messagebox.showinfo("Borrar Cliente","Hubo un error,EL cliente seleccionado no fue borrado")
     leer_cliente()
     habitaciones_disponibles()
 
-def setear_forms():#limpiar los formularios
+def setear_forms():# Limpiar los formularios
     boton_variable.set("Guardar")
     nombre.set("")
     apellido.set("")
@@ -129,7 +139,7 @@ def setear_forms():#limpiar los formularios
     fecha_ingreso.set(fecha)
     fecha_salida.set(fecha)
 
-def accion_boton():# la accion que realizara el boton del formulario
+def accion_boton():# La accion que realizara el boton del formulario
     
     if boton_variable.get() == "Guardar":
         crear_cliente()
@@ -137,7 +147,7 @@ def accion_boton():# la accion que realizara el boton del formulario
         modificar_cliente()
     setear_forms()
 
-def mostrar_datos(): # enviar los datos del cliente a modificar
+def mostrar_datos():# Enviar los datos del cliente a modificar
     global id_cliente
     boton_variable.set("Actualizar")
     cliente = arbol.item(arbol.focus())
@@ -149,7 +159,7 @@ def mostrar_datos(): # enviar los datos del cliente a modificar
     fecha_ingreso.set(str(cliente['values'][4]))
     fecha_salida.set(str(cliente['values'][5]))
 
-def habitaciones_disponibles():
+def habitaciones_disponibles():# ComboBox de habitaciones disponibles
     habitaciones_ocupadas=[]
     consulta = """--sql
         SELECT habitacion 
@@ -168,6 +178,7 @@ def habitaciones_disponibles():
 
 root = Tk()
 root.title("Hotel Teressitta")
+root.resizable(False,False)
 crear_tabla()
 
 # Variables
@@ -191,11 +202,11 @@ lista_datos = ttk.LabelFrame(
 herramientas = ttk.LabelFrame(
     marco, height=700, text="Herramientas", padding=10)
 
-# comboBox
+# ComboBox
 comboBox_Habitaciones = ttk.Combobox(formulario, textvariable=habitacion)
 habitaciones_disponibles()
 
-# formularios
+# Formularios
 formulario_nombre = ttk.Entry(formulario, textvariable=nombre)
 formulario_apellido = ttk.Entry(formulario, textvariable=apellido)
 formulario_DNI = ttk.Entry(formulario, textvariable=dni)
@@ -205,7 +216,7 @@ formulario_fecha_ingreso = DateEntry(
 formulario_fecha_salida = DateEntry(
     formulario, selectmode = "dia", date_pattern='yyyy-MM-dd', textvariable=fecha_salida)
 
-# botones
+# Botones
 boton_accion = ttk.Button(formulario, textvariable=boton_variable,
                          padding="10 5 10 5", command=accion_boton)
 boton_crear = ttk.Button(herramientas, text="Crear", padding="10 5 10 5",
@@ -216,7 +227,7 @@ boton_actualizar = ttk.Button(herramientas, text="Actualizar",
 boton_borrar = ttk.Button(herramientas, text="Borrar",
                            padding="10 5 10 5", command=borrar_cliente)
 
-# etiquetas
+# Etiquetas
 etiqueta_nombre = ttk.Label(formulario, text="Nombre")
 etiqueta_apellido = ttk.Label(formulario, text="Apellido")
 etiqueta_DNI = ttk.Label(formulario, text="DNI")
@@ -224,7 +235,7 @@ etiqueta_habitacion = ttk.Label(formulario, text="Habitacion")
 etiqueta_fecha_ingreso = ttk.Label(formulario, text="Fecha de Ingreso")
 etiqueta_fecha_salida = ttk.Label(formulario, text="Fechas de salida")
 
-# se empaquetan los elementos
+# Se empaquetan los elementos
 marco.grid(column=0, row=0)
 formulario.grid(column=0, row=0)
 lista_datos.grid(column=0, row=1, pady=5)
@@ -237,7 +248,6 @@ formulario_apellido.grid(column=1, row=1, sticky=W, padx=5)
 etiqueta_DNI.grid(column=2, row=0, sticky=W, padx=5)
 formulario_DNI.grid(column=2, row=1, sticky=W, padx=5)
 etiqueta_habitacion.grid(column=3, row=0, sticky=W, padx=5)
-#formulario_habitacion.grid(column=3, row=1, sticky=W, padx=5)
 comboBox_Habitaciones.grid(column=3, row=1, sticky=W, padx=5)
 etiqueta_fecha_ingreso.grid(column=4, row=0, sticky=W, padx=5)
 formulario_fecha_ingreso.grid(column=4, row=1, sticky=W, padx=5)
