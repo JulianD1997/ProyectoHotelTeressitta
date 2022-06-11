@@ -6,7 +6,17 @@ from tkcalendar import DateEntry
 from datetime import datetime
 import traceback
 
+"""
+    La Siguiente aplicacion busca optimizar la gestion de
+    Clientes en un Hotel en el cual se introduce datos basicos
+    del cliente, el numero de habitacion donde se va a hospedar
+    el dia que ingreso y el dia de salida.
+"""
+
+
 global id_cliente
+global habitaciones_hotel
+habitaciones_hotel = [101,102,103,104,201,202,203,204,301,302,303,304]
 
 # Funciones
 def conexion_SQL(consulta, parametros=()):
@@ -49,13 +59,14 @@ def crear_cliente():
 
         parametros = (nombre.get(), apellido.get(), dni.get(),
                       habitacion.get(), ingreso, salida)
+        print(parametros)
         conexion_SQL(consulta, parametros)
         print("Cliente guardado correctamente")
 
     else:
         print("todos los datos son requeridos")
-
     leer_cliente()
+    habitaciones_disponibles()
 
 def leer_cliente():
     # Se borrar todos los datos del arbol
@@ -90,8 +101,9 @@ def modificar_cliente():
                       habitacion.get(), ingreso, salida,id_cliente)
         conexion_SQL(consulta, parametros)
     else:
-        print("Todos los datos deben ser ingresados") 
+        print("Todos los datos deben ser ingresados")
     leer_cliente()
+    habitaciones_disponibles()
 
 def borrar_cliente():
     global id_cliente
@@ -104,28 +116,28 @@ def borrar_cliente():
     parametros = (id_cliente,)
     conexion_SQL(consulta,parametros)
     leer_cliente()
+    habitaciones_disponibles()
 
-def setear_forms():
-    #limpiar los formularios
+def setear_forms():#limpiar los formularios
     boton_variable.set("Guardar")
     nombre.set("")
     apellido.set("")
     dni.set(0)
-    habitacion.set(0)
+    habitacion.set("Seleccionar")
     hoy = datetime.now()
     fecha = str(hoy.strftime("%Y-%m-%d"))
     fecha_ingreso.set(fecha)
     fecha_salida.set(fecha)
 
-def accion_boton():
-    # la accion que realizara el boton del formulario
+def accion_boton():# la accion que realizara el boton del formulario
+    
     if boton_variable.get() == "Guardar":
         crear_cliente()
     else:
         modificar_cliente()
     setear_forms()
 
-def mostrar_datos():
+def mostrar_datos(): # enviar los datos del cliente a modificar
     global id_cliente
     boton_variable.set("Actualizar")
     cliente = arbol.item(arbol.focus())
@@ -137,11 +149,29 @@ def mostrar_datos():
     fecha_ingreso.set(str(cliente['values'][4]))
     fecha_salida.set(str(cliente['values'][5]))
 
+def habitaciones_disponibles():
+    habitaciones_ocupadas=[]
+    consulta = """--sql
+        SELECT habitacion 
+        FROM Clientes 
+        WHERE fechaDeSalida >= ?;
+    """
+    hoy = datetime.now()
+    fecha = hoy.strftime("%Y-%m-%d")
+    parametros =(fecha,)
+    datos = conexion_SQL(consulta,parametros)
+    for habitacion in datos:
+        habitaciones_ocupadas.append(habitacion[0])
+    comboBox_Habitaciones["values"]=list(set(habitaciones_hotel) - set(habitaciones_ocupadas))
+    return comboBox_Habitaciones
+
+
 root = Tk()
 root.title("Hotel Teressitta")
+crear_tabla()
 
 # Variables
-crear_tabla()
+
 nombre = StringVar()
 apellido = StringVar()
 dni = IntVar()
@@ -149,6 +179,7 @@ habitacion = IntVar()
 fecha_ingreso = StringVar()
 fecha_salida = StringVar()
 boton_variable = StringVar()
+habitacion.set("Seleccionar")
 boton_variable.set("Guardar")
 
 # Se declaran los Frames
@@ -159,6 +190,10 @@ lista_datos = ttk.LabelFrame(
     marco, height=700, text="Lista de clientes", padding=10)
 herramientas = ttk.LabelFrame(
     marco, height=700, text="Herramientas", padding=10)
+
+# comboBox
+comboBox_Habitaciones = ttk.Combobox(formulario, textvariable=habitacion)
+habitaciones_disponibles()
 
 # formularios
 formulario_nombre = ttk.Entry(formulario, textvariable=nombre)
@@ -202,7 +237,8 @@ formulario_apellido.grid(column=1, row=1, sticky=W, padx=5)
 etiqueta_DNI.grid(column=2, row=0, sticky=W, padx=5)
 formulario_DNI.grid(column=2, row=1, sticky=W, padx=5)
 etiqueta_habitacion.grid(column=3, row=0, sticky=W, padx=5)
-formulario_habitacion.grid(column=3, row=1, sticky=W, padx=5)
+#formulario_habitacion.grid(column=3, row=1, sticky=W, padx=5)
+comboBox_Habitaciones.grid(column=3, row=1, sticky=W, padx=5)
 etiqueta_fecha_ingreso.grid(column=4, row=0, sticky=W, padx=5)
 formulario_fecha_ingreso.grid(column=4, row=1, sticky=W, padx=5)
 etiqueta_fecha_salida.grid(column=5, row=0, sticky=W, padx=5)
