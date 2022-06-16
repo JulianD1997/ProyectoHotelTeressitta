@@ -6,6 +6,7 @@ from tkcalendar import DateEntry
 from datetime import datetime
 from tkinter import messagebox
 import traceback
+import re
 
 """
     La Siguiente aplicacion busca optimizar la gestion de
@@ -45,11 +46,29 @@ def crear_tabla():
     conexion_SQL(consulta)
 
 def validar_datos():# Validar que los formularios no esten vacios.
-    return len(nombre.get()) != 0 and len(apellido.get()) != 0\
-           and dni.get() != 0 and habitacion.get() != 0
+    error = ""
+
+    if not re.match("^[ a-zA-ZÀ-ÿ\u00f1\u00d1]+$", nombre.get()):
+        error = error + "\n - Nombre: Solo letras y espacios. No puede estar vacío."
+
+    if not re.match("^[ a-zA-ZÀ-ÿ\u00f1\u00d1]+$", apellido.get()):
+        error = error + "\n - Apellido: Solo letras y espacios. No puede estar vacío."
+
+    if not re.match("^[0-9]{8}$", dni.get()):
+        error = error + "\n - DNI: Solo números sin puntos. Longitud 8."
+
+    if not re.match("^[0-3]0[0-4]$", habitacion.get()):
+        error = error + "\n - Habitación: Debe seleccionar una opción de la lista."
+
+    if error:
+        error = "Campos Incorrectos:\n" + error
+
+    return error
 
 def crear_cliente():
-    if validar_datos():
+    error_validacion = validar_datos()
+
+    if not error_validacion:
         consulta = """--sql
             INSERT INTO Clientes
             values(NULL, ?, ?, ?, ?, ?, ?);
@@ -63,11 +82,10 @@ def crear_cliente():
         datos = conexion_SQL(consulta, parametros)
         if datos is not False:
             messagebox.showinfo("Crear Cliente","EL cliente fue creado correctamente")
-
-        else : messagebox.showinfo("Crear Cliente","Hubo un error, el cliente no fue guardado")
-
+            setear_forms()
+        else: messagebox.showinfo("Crear Cliente","Hubo un error, el cliente no fue guardado")
     else:
-        messagebox.showinfo("Crear Cliente","Datos faltantes")
+        messagebox.showinfo("Crear Cliente", error_validacion)
     leer_cliente()
     habitaciones_disponibles()
 
@@ -87,7 +105,9 @@ def leer_cliente():
                              cliente[5], cliente[6]))
 
 def modificar_cliente():
-    if validar_datos:
+    error_validacion = validar_datos()
+
+    if not error_validacion:
         consulta = """--sql
             UPDATE Clientes
             SET nombre = ?,
@@ -104,16 +124,17 @@ def modificar_cliente():
                       habitacion.get(), ingreso, salida,id_cliente)
         datos = conexion_SQL(consulta, parametros)
         if datos is not False:
-            messagebox.showinfo("Modificar Cliente","El cliente fue modificado correctamente")
-        else: messagebox.showinfo("Crear Cliente","Hubo un error, eL cliente seleccionado no fue modificado")
-    else: messagebox.showinfo("Modificar Cliente","Datos faltantes")
+            messagebox.showinfo("Modificar Cliente", "El cliente fue modificado correctamente")
+            setear_forms()
+        else: messagebox.showinfo("Crear Cliente", "Hubo un error, eL cliente seleccionado no fue modificado")
+    else: messagebox.showinfo("Modificar Cliente", error_validacion)
     leer_cliente()
     habitaciones_disponibles()
 
 def borrar_cliente():
     global id_cliente
     cliente = arbol.item(arbol.focus())
-    respuesta = messagebox.askyesno("Borrar cliente","¿Desea borrar el cliente?")
+    respuesta = messagebox.askyesno("Borrar cliente", "¿Desea borrar el cliente?")
     if respuesta:
         id_cliente = cliente['text']
         consulta = """--sql
@@ -124,7 +145,7 @@ def borrar_cliente():
         datos = conexion_SQL(consulta,parametros)
         if datos is not False:
             messagebox.showinfo("Borrar Cliente","EL cliente fue borrado correctamente")
-        else : messagebox.showinfo("Borrar Cliente","Hubo un error,EL cliente seleccionado no fue borrado")
+        else: messagebox.showinfo("Borrar Cliente","Hubo un error,EL cliente seleccionado no fue borrado")
     leer_cliente()
     habitaciones_disponibles()
 
@@ -145,7 +166,6 @@ def accion_boton():# La accion que realizara el boton del formulario
         crear_cliente()
     else:
         modificar_cliente()
-    setear_forms()
 
 def mostrar_datos():# Enviar los datos del cliente a modificar
     global id_cliente
@@ -185,8 +205,8 @@ crear_tabla()
 
 nombre = StringVar()
 apellido = StringVar()
-dni = IntVar()
-habitacion = IntVar()
+dni = StringVar()
+habitacion = StringVar()
 fecha_ingreso = StringVar()
 fecha_salida = StringVar()
 boton_variable = StringVar()
