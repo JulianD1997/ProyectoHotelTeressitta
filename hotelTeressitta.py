@@ -231,9 +231,10 @@ def habitaciones_disponibles():  # ComboBox de habitaciones disponibles
     return comboBox_Habitaciones
 
 
-def tipo_dato(text):
-    if not re.match("^[0-9]{8}$", text):
+def tipo_dato(text,new_text):
+    if len(new_text) > 8:
         return False
+    return text.isdecimal()
     
 
 root = Tk()
@@ -273,7 +274,7 @@ habitaciones_disponibles()
 # Formularios
 formulario_nombre = ttk.Entry(formulario, textvariable=nombre)
 formulario_apellido = ttk.Entry(formulario, textvariable=apellido)
-formulario_DNI = ttk.Entry(formulario,validate="key",validatecommand=(formulario.register(tipo_dato),"%S"),textvariable=dni)
+formulario_DNI = ttk.Entry(formulario,validate="key",validatecommand=(formulario.register(tipo_dato),"%S", "%P"),textvariable=dni)
 """formulario_DNI = ttk.Entry(formulario, textvariable=dni)"""
 formulario_habitacion = ttk.Entry(formulario, textvariable=habitacion)
 formulario_fecha_ingreso = DateEntry(formulario, selectmode="dia",
