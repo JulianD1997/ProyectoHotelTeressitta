@@ -1,3 +1,4 @@
+from operator import le
 import sqlite3
 from tkinter import *
 from tkinter import ttk
@@ -16,10 +17,8 @@ import re
 """
 global id_cliente
 global habitaciones_hotel
-habitaciones_hotel = [101, 102, 103, 104, 201, 202,
-                      203, 204, 301, 302, 303, 304]
-
-
+habitaciones_hotel = ["101","102","103", "104", "201", "202",
+                      "203", "204", "301", "302", "303","304"]
 # Funciones
 def conexion_sql(consulta, parametros=()):
     mi_conexion = sqlite3.connect("HotelTeressitta")
@@ -40,8 +39,8 @@ def crear_tabla():
             ID  INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
             nombre VARCHAR(75) NOT NULL,
             apellido VARCHAR(75) NOT NULL,
-            DNI INTEGER(15) NOT NULL,
-            habitacion INTEGER(6) NOT NULL,
+            DNI VARCHAR(10) NOT NULL,
+            habitacion VARCHAR(6) NOT NULL,
             fechaDeIngreso DATE NOT NULL,
             fechaDESalida DATE NOT NULL
         );'''
@@ -50,34 +49,42 @@ def crear_tabla():
 
 
 def validar_datos():  # Validar que los formularios no esten vacios.
-    error = ""
+    
+    validar = True
 
     if not re.match("^[ a-zA-ZÀ-ÿ\u00f1\u00d1]+$", nombre.get()):
-        error = error\
-                + "\n - Nombre: Solo letras y espacios. Debe rellenar."
+        validar = False
+        if len(nombre.get()) == 0:
+            nombre_error.set("Campo vacio")
+        else:
+            nombre_error.set("Solo letras")
 
     if not re.match("^[ a-zA-ZÀ-ÿ\u00f1\u00d1]+$", apellido.get()):
-        error = error\
-                + "\n - Apellido: Solo letras y espacios. Debe rellenar."
+        validar = False
+        if len(apellido.get()) == 0:
+            apellido_error.set("Campo vacio")
+        else:
+            apellido_error.set("Solo letras")
 
     if not re.match("^[0-9]{8}$", dni.get()):
-        error = error\
-                + "\n - DNI: Solo números sin puntos. Longitud 8."
-
+        validar = False
+        if len(dni.get()) == 0 :
+            dni_error.set("Campo vacio")
+        elif len(dni.get()) !=8:
+            dni_error.set("Ingresa 8 numeros")
+        else:
+            dni_error.set("Solo numeros")
     if not re.match("^[0-3]0[0-4]$", habitacion.get()):
-        error = error\
-                + "\n - Habitación: Debe seleccionar una opción de la lista."
+        validar = False
+        if habitacion.get() == "Seleccionar":
+            habitacion_error.set("Sin seleccionar")
 
-    if error:
-        error = "Campos Incorrectos:\n" + error
-
-    return error
+    return validar
 
 
 def crear_cliente():
-    error_validacion = validar_datos()
 
-    if not error_validacion:
+    if validar_datos():
         consulta = """--sql
             INSERT INTO Clientes
             values(NULL, ?, ?, ?, ?, ?, ?);
@@ -85,7 +92,7 @@ def crear_cliente():
         ingreso = datetime.strptime(fecha_ingreso.get(), '%Y-%m-%d').date()
         salida = datetime.strptime(fecha_ingreso.get(), '%Y-%m-%d').date()
 
-        parametros = (nombre.get(), apellido.get(), dni.get(),
+        parametros = (nombre.get().title(), apellido.get().title(), dni.get(),
                       habitacion.get(), ingreso, salida)
         print(parametros)
         datos = conexion_sql(consulta, parametros)
@@ -96,8 +103,6 @@ def crear_cliente():
         else:
             messagebox.showinfo("Crear Cliente",
                                 "Hubo un error, el cliente no fue guardado")
-    else:
-        messagebox.showinfo("Crear Cliente", error_validacion)
     leer_cliente()
     habitaciones_disponibles()
 
@@ -119,9 +124,8 @@ def leer_cliente():
 
 
 def modificar_cliente():
-    error_validacion = validar_datos()
 
-    if not error_validacion:
+    if validar_datos():
         consulta = """--sql
             UPDATE Clientes
             SET nombre = ?,
@@ -144,8 +148,6 @@ def modificar_cliente():
         else:
             messagebox.showinfo("Crear Cliente",
                                 "Hubo un error, el cliente no fue modificado")
-    else:
-        messagebox.showinfo("Modificar Cliente", error_validacion)
     leer_cliente()
     habitaciones_disponibles()
 
@@ -171,6 +173,7 @@ def borrar_cliente():
                                 "Hubo un error,EL cliente no fue borrado")
     leer_cliente()
     habitaciones_disponibles()
+    setear_forms()
 
 
 def setear_forms():  # Limpiar los formularios
@@ -183,6 +186,10 @@ def setear_forms():  # Limpiar los formularios
     fecha = str(hoy.strftime("%Y-%m-%d"))
     fecha_ingreso.set(fecha)
     fecha_salida.set(fecha)
+    nombre_error.set("")
+    apellido_error.set("")
+    dni_error.set("")
+    habitacion_error.set("")
 
 
 def accion_boton():  # La accion que realizara el boton del formulario
@@ -195,6 +202,7 @@ def accion_boton():  # La accion que realizara el boton del formulario
 
 def mostrar_datos():  # Enviar los datos del cliente a modificar
     global id_cliente
+    setear_forms()
     boton_variable.set("Actualizar")
     cliente = arbol.item(arbol.focus())
     id_cliente = cliente['text']
@@ -219,10 +227,14 @@ def habitaciones_disponibles():  # ComboBox de habitaciones disponibles
     datos = conexion_sql(consulta, parametros)
     for habitacion in datos:
         habitaciones_ocupadas.append(habitacion[0])
-    comboBox_Habitaciones["values"] = list(set(habitaciones_hotel)
-                                           - set(habitaciones_ocupadas))
+    comboBox_Habitaciones["values"] = sorted(list(set(habitaciones_hotel)- set(habitaciones_ocupadas)))
     return comboBox_Habitaciones
 
+
+def tipo_dato(text):
+    if not re.match("^[0-9]{8}$", text):
+        return False
+    
 
 root = Tk()
 root.title("Hotel Teressitta")
@@ -240,6 +252,10 @@ fecha_salida = StringVar()
 boton_variable = StringVar()
 habitacion.set("Seleccionar")
 boton_variable.set("Guardar")
+nombre_error = StringVar()
+apellido_error = StringVar()
+dni_error = StringVar()
+habitacion_error = StringVar()
 
 # Se declaran los Frames
 marco = ttk.Frame(root, padding=10)
@@ -257,7 +273,8 @@ habitaciones_disponibles()
 # Formularios
 formulario_nombre = ttk.Entry(formulario, textvariable=nombre)
 formulario_apellido = ttk.Entry(formulario, textvariable=apellido)
-formulario_DNI = ttk.Entry(formulario, textvariable=dni)
+formulario_DNI = ttk.Entry(formulario,validate="key",validatecommand=(formulario.register(tipo_dato),"%S"),textvariable=dni)
+"""formulario_DNI = ttk.Entry(formulario, textvariable=dni)"""
 formulario_habitacion = ttk.Entry(formulario, textvariable=habitacion)
 formulario_fecha_ingreso = DateEntry(formulario, selectmode="dia",
                                      date_pattern='yyyy-MM-dd',
@@ -284,7 +301,10 @@ etiqueta_DNI = ttk.Label(formulario, text="DNI")
 etiqueta_habitacion = ttk.Label(formulario, text="Habitacion")
 etiqueta_fecha_ingreso = ttk.Label(formulario, text="Fecha de Ingreso")
 etiqueta_fecha_salida = ttk.Label(formulario, text="Fechas de salida")
-
+etiqueta_nombre_error = ttk.Label(formulario, textvariable=nombre_error,foreground="Red")
+etiqueta_apellido_error = ttk.Label(formulario, textvariable=apellido_error,foreground="Red")
+etiqueta_DNI_error = ttk.Label(formulario, textvariable=dni_error,foreground="Red")
+etiqueta_habitacion_error = ttk.Label(formulario, textvariable=habitacion_error,foreground="Red")
 # Se empaquetan los elementos
 marco.grid(column=0, row=0)
 formulario.grid(column=0, row=0)
@@ -293,12 +313,16 @@ herramientas.grid(column=0, row=2)
 
 etiqueta_nombre.grid(column=0, row=0, sticky=SW, padx=5)
 formulario_nombre.grid(column=0, row=1, sticky=W, padx=5)
+etiqueta_nombre_error.grid(column=0, row=2,sticky='W N',padx=5)
 etiqueta_apellido.grid(column=1, row=0, sticky=W, padx=5)
 formulario_apellido.grid(column=1, row=1, sticky=W, padx=5)
+etiqueta_apellido_error.grid(column=1, row=2,sticky='W N',padx=5)
 etiqueta_DNI.grid(column=2, row=0, sticky=W, padx=5)
 formulario_DNI.grid(column=2, row=1, sticky=W, padx=5)
+etiqueta_DNI_error.grid(column=2, row=2,sticky='W N',padx=5)
 etiqueta_habitacion.grid(column=3, row=0, sticky=W, padx=5)
 comboBox_Habitaciones.grid(column=3, row=1, sticky=W, padx=5)
+etiqueta_habitacion_error.grid(column=3, row=2,sticky='W N',padx=5)
 etiqueta_fecha_ingreso.grid(column=4, row=0, sticky=W, padx=5)
 formulario_fecha_ingreso.grid(column=4, row=1, sticky=W, padx=5)
 etiqueta_fecha_salida.grid(column=5, row=0, sticky=W, padx=5)
