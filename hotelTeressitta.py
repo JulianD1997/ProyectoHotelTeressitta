@@ -16,10 +16,12 @@ import re
     del cliente, el numero de habitacion donde se va a hospedar
     el dia que ingreso y el dia de salida.
 """
+
 global id_cliente
 global habitaciones_hotel
-habitaciones_hotel = ["101","102","103", "104", "201", "202",
-                      "203", "204", "301", "302", "303","304"]
+habitaciones_hotel = ["101", "102", "103", "104", "201", "202",
+                      "203", "204", "301", "302", "303", "304"]
+
 
 # Funciones
 def conexion_sql(consulta, parametros=()):
@@ -69,9 +71,9 @@ def validar_datos():  # Validar que los formularios no esten vacios.
 
     if not re.match("^[0-9]{8}$", dni.get()):
         validar = False
-        if len(dni.get()) == 0 :
+        if len(dni.get()) == 0:
             dni_error.set("Campo vacio")
-        else :
+        else:
             dni_error.set("complete los 8 digitos")
     if not re.match("^[0-3]0[0-4]$", habitacion.get()):
         validar = False
@@ -105,20 +107,21 @@ def crear_cliente():
 
 
 def consulta():
-    if len(nombre.get())!=0:
+    if len(nombre.get()) != 0:
         pass
-    elif len(apellido.get())!=0:
+    elif len(apellido.get()) != 0:
         pass
-    elif len(dni.get())!=0:
+    elif len(dni.get()) != 0:
         pass
-    elif len(habitacion.get())!=0:
+    elif len(habitacion.get()) != 0:
         pass
-    elif len(fecha_ingreso.get())!=0:
+    elif len(fecha_ingreso.get()) != 0:
         pass
-    elif len(fecha_salida.get())!=0:
+    elif len(fecha_salida.get()) != 0:
         pass
     else:
         print("solo una consulta")
+
 
 def leer_cliente():
     # Se borran todos los datos del arbol
@@ -195,7 +198,7 @@ def setear_forms(accion=""):  # Limpiar los formularios
     apellido.set("")
     dni.set("")
     habitacion.set("Seleccionar")
-    if accion=="Consultar":
+    if accion == "Consultar":
         boton_variable.set("Consultar")
         fecha_ingreso.set("")
         fecha_salida.set("")
@@ -251,18 +254,19 @@ def habitaciones_disponibles():  # ComboBox de habitaciones disponibles
     datos = conexion_sql(consulta, parametros)
     for habitacion in datos:
         habitaciones_ocupadas.append(habitacion[0])
-    comboBox_Habitaciones["values"] = sorted(list(set(habitaciones_hotel)- set(habitaciones_ocupadas)))
+    comboBox_Habitaciones["values"] = sorted(list(set(habitaciones_hotel)
+                                             - set(habitaciones_ocupadas)))
     return comboBox_Habitaciones
 
 
 def validar_numeros(text):
-    if not re.match("^[0-9]{0,8}$",text):
+    if not re.match("^[0-9]{0,8}$", text):
         return False
     return True
 
 
 def validar_caracteres(text):
-    if not re.match("^[ a-zA-ZÀ-ÿ\u00f1\u00d1]{0,30}$",text):
+    if not re.match("^[ a-zA-ZÀ-ÿ\u00f1\u00d1]{0,30}$", text):
         return False
     return True
 
@@ -297,26 +301,32 @@ herramientas = ttk.LabelFrame(
     marco, height=700, text="Herramientas", padding=10)
 
 # ComboBox
-comboBox_Habitaciones = ttk.Combobox(formulario, textvariable=habitacion,state="readonly")
+comboBox_Habitaciones = ttk.Combobox(formulario, textvariable=habitacion,
+                                     state="readonly")
 habitaciones_disponibles()
 
 # Formularios
-formulario_nombre = ttk.Entry(formulario,validate="all",
-                        validatecommand=(formulario.register(validar_caracteres),\
-                                    '%P'),textvariable=nombre)
-formulario_apellido = ttk.Entry(formulario,validate="all",
-                        validatecommand=(formulario.register(validar_caracteres),\
-                                    '%P'),textvariable=apellido)
-formulario_DNI = ttk.Entry(formulario,validate="all",
-                    validatecommand=(formulario.register(validar_numeros),\
-                                    '%P'),textvariable=dni)
+formulario_nombre = ttk.Entry(formulario, validate="all",
+                              validatecommand=(formulario.register(
+                                  validar_caracteres), '%P'),
+                              textvariable=nombre)
+formulario_apellido = ttk.Entry(formulario, validate="all",
+                                validatecommand=(formulario.register(
+                                    validar_caracteres), '%P'),
+                                textvariable=apellido)
+formulario_DNI = ttk.Entry(formulario, validate="all",
+                           validatecommand=(formulario.register(
+                               validar_numeros), '%P'),
+                           textvariable=dni)
 formulario_habitacion = ttk.Entry(formulario, textvariable=habitacion)
 formulario_fecha_ingreso = DateEntry(formulario, selectmode="dia",
                                      date_pattern='yyyy-MM-dd',
-                                     textvariable=fecha_ingreso,state="readonly")
+                                     textvariable=fecha_ingreso,
+                                     state="readonly")
 formulario_fecha_salida = DateEntry(formulario, selectmode="dia",
                                     date_pattern='yyyy-MM-dd',
-                                    textvariable=fecha_salida,state="readonly")
+                                    textvariable=fecha_salida,
+                                    state="readonly")
 
 # Botones
 boton_accion = ttk.Button(formulario, textvariable=boton_variable,
@@ -324,7 +334,8 @@ boton_accion = ttk.Button(formulario, textvariable=boton_variable,
 boton_crear = ttk.Button(herramientas, text="Crear", padding="10 5 10 5",
                          command=setear_forms)
 boton_consultar = ttk.Button(herramientas, text="Consultar",
-                          padding="10 5 10 5", command=lambda:setear_forms("Consultar"))
+                             padding="10 5 10 5",
+                             command=lambda: setear_forms("Consultar"))
 boton_actualizar = ttk.Button(herramientas, text="Actualizar",
                               padding="10 5 10 5",
                               command=mostrar_datos)
@@ -339,10 +350,15 @@ etiqueta_DNI = ttk.Label(formulario, text="DNI")
 etiqueta_habitacion = ttk.Label(formulario, text="Habitacion")
 etiqueta_fecha_ingreso = ttk.Label(formulario, text="Fecha de Ingreso")
 etiqueta_fecha_salida = ttk.Label(formulario, text="Fechas de salida")
-etiqueta_nombre_error = ttk.Label(formulario, textvariable=nombre_error,foreground="Red")
-etiqueta_apellido_error = ttk.Label(formulario, textvariable=apellido_error,foreground="Red")
-etiqueta_DNI_error = ttk.Label(formulario, textvariable=dni_error,foreground="Red")
-etiqueta_habitacion_error = ttk.Label(formulario, textvariable=habitacion_error,foreground="Red")
+etiqueta_nombre_error = ttk.Label(formulario, textvariable=nombre_error,
+                                  foreground="Red")
+etiqueta_apellido_error = ttk.Label(formulario, textvariable=apellido_error,
+                                    foreground="Red")
+etiqueta_DNI_error = ttk.Label(formulario, textvariable=dni_error,
+                               foreground="Red")
+etiqueta_habitacion_error = ttk.Label(formulario,
+                                      textvariable=habitacion_error,
+                                      foreground="Red")
 
 # Se empaquetan los elementos
 marco.grid(column=0, row=0)
@@ -352,16 +368,16 @@ herramientas.grid(column=0, row=2)
 
 etiqueta_nombre.grid(column=0, row=0, sticky=SW, padx=5)
 formulario_nombre.grid(column=0, row=1, sticky=W, padx=5)
-etiqueta_nombre_error.grid(column=0, row=2,sticky='W N',padx=5)
+etiqueta_nombre_error.grid(column=0, row=2, sticky='W N', padx=5)
 etiqueta_apellido.grid(column=1, row=0, sticky=W, padx=5)
 formulario_apellido.grid(column=1, row=1, sticky=W, padx=5)
-etiqueta_apellido_error.grid(column=1, row=2,sticky='W N',padx=5)
+etiqueta_apellido_error.grid(column=1, row=2, sticky='W N', padx=5)
 etiqueta_DNI.grid(column=2, row=0, sticky=W, padx=5)
 formulario_DNI.grid(column=2, row=1, sticky=W, padx=5)
-etiqueta_DNI_error.grid(column=2, row=2,sticky='W N',padx=5)
+etiqueta_DNI_error.grid(column=2, row=2, sticky='W N', padx=5)
 etiqueta_habitacion.grid(column=3, row=0, sticky=W, padx=5)
 comboBox_Habitaciones.grid(column=3, row=1, sticky=W, padx=5)
-etiqueta_habitacion_error.grid(column=3, row=2,sticky='W N',padx=5)
+etiqueta_habitacion_error.grid(column=3, row=2, sticky='W N', padx=5)
 etiqueta_fecha_ingreso.grid(column=4, row=0, sticky=W, padx=5)
 formulario_fecha_ingreso.grid(column=4, row=1, sticky=W, padx=5)
 etiqueta_fecha_salida.grid(column=5, row=0, sticky=W, padx=5)
@@ -370,7 +386,7 @@ formulario_fecha_salida.grid(column=5, row=1, sticky=W, padx=5)
 boton_accion.grid(column=5, row=2, sticky=W, pady=10)
 boton_crear.grid(column=0, row=0, sticky=W, padx=20)
 boton_actualizar.grid(column=1, row=0, sticky=W, padx=20)
-boton_consultar.grid(column=2, row=0, sticky=W,padx=20)
+boton_consultar.grid(column=2, row=0, sticky=W, padx=20)
 boton_borrar.grid(column=3, row=0, sticky=W, padx=20)
 
 
