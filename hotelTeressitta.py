@@ -375,6 +375,8 @@ boton_accion = ttk.Button(formulario, textvariable=boton_variable,
                           padding="10 5 10 5", command=accion_boton)
 boton_crear = ttk.Button(herramientas, text="Crear", padding="10 5 10 5",
                          command=setear_forms)
+boton_clientes = ttk.Button(herramientas, text="Clientes", padding="10 5 10 5",
+                         command=leer_cliente)
 boton_consultar = ttk.Button(herramientas, text="Consultar",
                              padding="10 5 10 5",
                              command=lambda: setear_forms("Consultar"))
@@ -427,8 +429,9 @@ formulario_fecha_salida.grid(column=5, row=1, sticky=W, padx=5)
 boton_accion.grid(column=5, row=2, sticky=W, pady=10)
 boton_crear.grid(column=0, row=0, sticky=W, padx=20)
 boton_actualizar.grid(column=1, row=0, sticky=W, padx=20)
-boton_consultar.grid(column=2, row=0, sticky=W, padx=20)
-boton_borrar.grid(column=3, row=0, sticky=W, padx=20)
+boton_clientes.grid(column=2,row=0, sticky=W, padx=20)
+boton_consultar.grid(column=3, row=0, sticky=W, padx=20)
+boton_borrar.grid(column=4, row=0, sticky=W, padx=20)
 
 # Lista de clientes
 arbol = ttk.Treeview(lista_datos)
