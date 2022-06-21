@@ -1,9 +1,9 @@
-from operator import le
+# from operator import le
 import sqlite3
 from tkinter import *
 from tkinter import ttk
-from click import command
-from pytest import Item
+# from click import command
+# from pytest import Item
 from tkcalendar import DateEntry
 from datetime import datetime
 from tkinter import messagebox
@@ -18,7 +18,7 @@ import re
 """
 
 global id_cliente
-global habitaciones_hotel
+# global habitaciones_hotel
 habitaciones_hotel = ["101", "102", "103", "104", "201", "202",
                       "203", "204", "301", "302", "303", "304"]
 
@@ -52,7 +52,7 @@ def crear_tabla():
     conexion_sql(consulta)
 
 
-def validar_datos():  # Validar que los formularios no esten vacios.
+def validar_datos():  # Validar que los formularios no estén vacíos.
     validar = True
     setear_etiquetas()
     if not re.match("^[ a-zA-ZÀ-ÿ\u00f1\u00d1]+$", nombre.get()):
@@ -91,7 +91,7 @@ def crear_cliente():
             values(NULL, ?, ?, ?, ?, ?, ?);
         """
         ingreso = datetime.strptime(fecha_ingreso.get(), '%Y-%m-%d').date()
-        salida = datetime.strptime(fecha_ingreso.get(), '%Y-%m-%d').date()      
+        salida = datetime.strptime(fecha_salida.get(), '%Y-%m-%d').date()
         parametros = (nombre.get().title(), apellido.get().title(), dni.get(),
                       habitacion.get(), ingreso, salida)
         datos = conexion_sql(consulta, parametros)
@@ -103,24 +103,52 @@ def crear_cliente():
             messagebox.showinfo("Crear Cliente",
                                 "Hubo un error, el cliente no fue guardado")
     leer_cliente()
-    habitaciones_disponibles()
 
 
 def consulta():
+    nombre_buscar = apellido_buscar = dni_buscar = habitacion_buscar = "%%"
+    fecha_ingreso_buscar = "0000-01-01"
+    fecha_salida_buscar = "9999-12-31"
+
     if len(nombre.get()) != 0:
-        pass
-    elif len(apellido.get()) != 0:
-        pass
-    elif len(dni.get()) != 0:
-        pass
-    elif len(habitacion.get()) != 0:
-        pass
-    elif len(fecha_ingreso.get()) != 0:
-        pass
-    elif len(fecha_salida.get()) != 0:
-        pass
-    else:
-        print("solo una consulta")
+        nombre_buscar = "%" + nombre.get() + "%"
+    if len(apellido.get()) != 0:
+        apellido_buscar = "%" + apellido.get() + "%"
+    if len(dni.get()) != 0:
+        dni_buscar = "%" + dni.get() + "%"
+    if habitacion.get() != "Seleccionar":
+        habitacion_buscar = habitacion.get()
+    if len(fecha_ingreso.get()) != 0:
+        fecha_ingreso_buscar = datetime.strptime(fecha_ingreso.get(),
+                                                 '%Y-%m-%d').date()
+    if len(fecha_salida.get()) != 0:
+        fecha_salida_buscar = datetime.strptime(fecha_salida.get(),
+                                                '%Y-%m-%d').date()
+
+    parametros = (nombre_buscar, apellido_buscar, dni_buscar,
+                  habitacion_buscar, fecha_ingreso_buscar, fecha_salida_buscar)
+
+    # Se borran todos los datos del arbol
+    clientes = arbol.get_children()
+    for cliente in clientes:
+        arbol.delete(cliente)
+
+    consulta = ("""--sql
+            SELECT * FROM Clientes
+            WHERE nombre LIKE ?
+            AND apellido LIKE ?
+            AND DNI LIKE ?
+            AND habitacion LIKE ?
+            AND fechaDeIngreso >= ?
+            AND fechaDESalida <= ?
+            ORDER BY apellido ASC;
+        """)
+    datos = conexion_sql(consulta, parametros)
+
+    for cliente in datos:
+        arbol.insert("", "end", text=cliente[0],
+                     values=(cliente[1], cliente[2], cliente[3],
+                             cliente[4], cliente[5], cliente[6]))
 
 
 def leer_cliente():
@@ -135,12 +163,11 @@ def leer_cliente():
     datos = conexion_sql(consulta)
     for cliente in datos:
         arbol.insert("", "end", text=cliente[0],
-                     values=(cliente[1], cliente[2], cliente[3], cliente[4],
-                             cliente[5], cliente[6]))
+                     values=(cliente[1], cliente[2], cliente[3],
+                             cliente[4], cliente[5], cliente[6]))
 
 
 def modificar_cliente():
-
     if validar_datos():
         consulta = """--sql
             UPDATE Clientes
@@ -165,7 +192,6 @@ def modificar_cliente():
             messagebox.showinfo("Crear Cliente",
                                 "Hubo un error, el cliente no fue modificado")
     leer_cliente()
-    habitaciones_disponibles()
 
 
 def borrar_cliente():
@@ -188,7 +214,6 @@ def borrar_cliente():
             messagebox.showinfo("Borrar Cliente",
                                 "Hubo un error,EL cliente no fue borrado")
     leer_cliente()
-    habitaciones_disponibles()
     setear_forms()
 
 
@@ -217,7 +242,7 @@ def setear_etiquetas():
     habitacion_error.set("")
 
 
-def accion_boton():  # La accion que realizara el boton del formulario
+def accion_boton():  # La acción que realizara el botón del formulario
     
     if boton_variable.get() == "Guardar":
         crear_cliente()
@@ -225,6 +250,8 @@ def accion_boton():  # La accion que realizara el boton del formulario
         modificar_cliente()
     else:
         consulta()
+
+    habitaciones_disponibles()
 
 
 def mostrar_datos():  # Enviar los datos del cliente a modificar
@@ -246,11 +273,11 @@ def habitaciones_disponibles():  # ComboBox de habitaciones disponibles
     consulta = """--sql
         SELECT habitacion 
         FROM Clientes 
-        WHERE fechaDeSalida >= ?;
+        WHERE fechaDeSalida BETWEEN ? AND ?;
     """
-    hoy = datetime.now()
-    fecha = hoy.strftime("%Y-%m-%d")
-    parametros = (fecha,)
+    fecha1 = datetime.strptime(fecha_ingreso.get(), '%Y-%m-%d').date()
+    fecha2 = datetime.strptime(fecha_salida.get(), '%Y-%m-%d').date()
+    parametros = (fecha1,fecha2)
     datos = conexion_sql(consulta, parametros)
     for habitacion in datos:
         habitaciones_ocupadas.append(habitacion[0])
@@ -303,7 +330,6 @@ herramientas = ttk.LabelFrame(
 # ComboBox
 comboBox_Habitaciones = ttk.Combobox(formulario, textvariable=habitacion,
                                      state="readonly")
-habitaciones_disponibles()
 
 # Formularios
 formulario_nombre = ttk.Entry(formulario, validate="all",
@@ -341,7 +367,6 @@ boton_actualizar = ttk.Button(herramientas, text="Actualizar",
                               command=mostrar_datos)
 boton_borrar = ttk.Button(herramientas, text="Borrar",
                           padding="10 5 10 5", command=borrar_cliente)
-
 
 # Etiquetas
 etiqueta_nombre = ttk.Label(formulario, text="Nombre")
@@ -389,10 +414,12 @@ boton_actualizar.grid(column=1, row=0, sticky=W, padx=20)
 boton_consultar.grid(column=2, row=0, sticky=W, padx=20)
 boton_borrar.grid(column=3, row=0, sticky=W, padx=20)
 
-
 # Lista de clientes
 arbol = ttk.Treeview(lista_datos)
 leer_cliente()
+habitaciones_disponibles()
+formulario_fecha_ingreso.bind("<<DateEntrySelected>>", habitaciones_disponibles)
+
 arbol['columns'] = ('nombre', 'apellido', 'DNI', 'habitacion',
                     'fecha ingreso', 'fecha salida',)
 arbol.grid(column=0, row=0)
