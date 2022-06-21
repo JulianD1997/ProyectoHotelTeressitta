@@ -126,10 +126,6 @@ def consulta():
     parametros = (nombre_buscar, apellido_buscar, dni_buscar,
                   habitacion_buscar, fecha_ingreso_buscar, fecha_salida_buscar)
 
-    clientes = arbol.get_children()
-    for cliente in clientes:
-        arbol.delete(cliente)
-
     consulta = ("""--sql
             SELECT * FROM Clientes
             WHERE nombre LIKE ?
@@ -141,11 +137,19 @@ def consulta():
             ORDER BY apellido ASC;
         """)
     datos = conexion_sql(consulta, parametros)
+    print(datos)
+    if len(datos)== 0:
+        messagebox.showinfo("Consultar",
+                                "El cliente no existe")
+    else:
+        clientes = arbol.get_children()
+        for cliente in clientes:
+            arbol.delete(cliente)
 
-    for cliente in datos:
-        arbol.insert("", "end", text=cliente[0],
-                     values=(cliente[1], cliente[2], cliente[3],
-                             cliente[4], cliente[5], cliente[6]))
+        for cliente in datos:
+            arbol.insert("", "end", text=cliente[0],
+                        values=(cliente[1], cliente[2], cliente[3],
+                                cliente[4], cliente[5], cliente[6]))
     setear_forms()
 
 
