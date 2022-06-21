@@ -2,6 +2,7 @@
 import sqlite3
 from tkinter import *
 from tkinter import ttk
+from tkinter.tix import Tree
 # from click import command
 # from pytest import Item
 from tkcalendar import DateEntry
@@ -316,7 +317,8 @@ def validar_caracteres(text):
     if not re.match("^[ a-zA-ZÀ-ÿ\u00f1\u00d1]{0,30}$", text):
         return False
     return True
-
+def no_redimensionar(event):
+    return "break"
 
 root = Tk()
 root.title("Hotel Teressitta")
@@ -439,6 +441,9 @@ boton_borrar.grid(column=4, row=0, sticky=W, padx=20)
 
 # Lista de clientes
 arbol = ttk.Treeview(lista_datos)
+#scrollbar
+scrol=ttk.Scrollbar(lista_datos,orient="vertical",command=arbol.yview,)
+arbol.configure(yscrollcommand=scrol)
 leer_cliente()
 habitaciones_disponibles()
 formulario_fecha_ingreso.bind("<<DateEntrySelected>>", habitaciones_disponibles)
@@ -447,6 +452,7 @@ formulario_fecha_salida.bind("<<DateEntrySelected>>", habitaciones_disponibles)
 arbol['columns'] = ('nombre', 'apellido', 'DNI', 'habitacion',
                     'fecha ingreso', 'fecha salida',)
 arbol.grid(column=0, row=0)
+scrol.grid(column=1, row=0,sticky=(N,S))
 arbol.column('#0', width=50, minwidth=10)
 arbol.heading('#0', text='ID')
 arbol.column('nombre', width=120, minwidth=10)
@@ -461,5 +467,6 @@ arbol.column('fecha ingreso', width=100, minwidth=10)
 arbol.heading('fecha ingreso', text='Fecha ingreso')
 arbol.column('fecha salida', width=100, minwidth=10)
 arbol.heading('fecha salida', text='Fecha Salida')
+arbol.bind("<Button-1>", no_redimensionar)
 
 root.mainloop()
