@@ -468,6 +468,6 @@ arbol.column('fecha ingreso', width=100, minwidth=10)
 arbol.heading('fecha ingreso', text='Fecha ingreso')
 arbol.column('fecha salida', width=100, minwidth=10)
 arbol.heading('fecha salida', text='Fecha Salida')
-arbol.bind("<Button-1>", no_redimensionar)
+arbol.bind("<B1-Motion>", no_redimensionar)
 
 root.mainloop()
