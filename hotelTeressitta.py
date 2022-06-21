@@ -1,10 +1,6 @@
-# from operator import le
 import sqlite3
 from tkinter import *
 from tkinter import ttk
-from tkinter.tix import Tree
-# from click import command
-# from pytest import Item
 from tkcalendar import DateEntry
 from datetime import datetime
 from tkinter import messagebox
@@ -120,9 +116,11 @@ def consulta():
     if habitacion.get() != "Seleccionar":
         habitacion_buscar = habitacion.get()
     if len(fecha_ingreso.get()) != 0:
-        fecha_ingreso_buscar = datetime.strptime(fecha_ingreso.get(),'%Y-%m-%d').date()
+        fecha_ingreso_buscar = datetime.strptime(fecha_ingreso.get(),
+                                                 '%Y-%m-%d').date()
     if len(fecha_salida.get()) != 0:
-        fecha_salida_buscar = datetime.strptime(fecha_salida.get(),'%Y-%m-%d').date()
+        fecha_salida_buscar = datetime.strptime(fecha_salida.get(),
+                                                '%Y-%m-%d').date()
 
     parametros = (nombre_buscar, apellido_buscar, dni_buscar,
                   habitacion_buscar, fecha_ingreso_buscar, fecha_salida_buscar)
@@ -139,9 +137,9 @@ def consulta():
         """)
     datos = conexion_sql(consulta, parametros)
     print(datos)
-    if len(datos)== 0:
+    if len(datos) == 0:
         messagebox.showinfo("Consultar",
-                                "El cliente no existe")
+                            "El cliente no existe")
     else:
         clientes = arbol.get_children()
         for cliente in clientes:
@@ -149,8 +147,8 @@ def consulta():
 
         for cliente in datos:
             arbol.insert("", "end", text=cliente[0],
-                        values=(cliente[1], cliente[2], cliente[3],
-                                cliente[4], cliente[5], cliente[6]))
+                         values=(cliente[1], cliente[2], cliente[3],
+                                 cliente[4], cliente[5], cliente[6]))
     setear_forms()
 
 
@@ -272,24 +270,28 @@ def mostrar_datos():  # Enviar los datos del cliente a modificar
     fecha_salida.set(str(cliente['values'][5]))
 
 
-def habitaciones_disponibles(evento=""):  # ComboBox de habitaciones disponibles
+# ComboBox de habitaciones disponibles
+def habitaciones_disponibles(evento=""):
     habitaciones_ocupadas = []
-    if boton_variable.get()=="Consultar":
+    if boton_variable.get() == "Consultar":
         comboBox_Habitaciones["values"] = habitaciones_hotel
         return comboBox_Habitaciones
-    elif evento!="" and (datetime.strptime(fecha_ingreso.get(), '%Y-%m-%d').date()<=datetime.strptime(fecha_salida.get(), '%Y-%m-%d').date()):
+    elif evento != ""\
+            and (datetime.strptime(fecha_ingreso.get(), '%Y-%m-%d').date()
+                 <= datetime.strptime(fecha_salida.get(), '%Y-%m-%d').date()):
         consulta = """--sql
             SELECT habitacion 
             FROM Clientes 
             WHERE fechaDeSalida BETWEEN ? and ?;
         """
-        fecha1=datetime.strptime(fecha_ingreso.get(), '%Y-%m-%d').date()
-        fecha2=datetime.strptime(fecha_salida.get(), '%Y-%m-%d').date()
-        parametros=(fecha1,fecha2)
-        datos=conexion_sql(consulta, parametros)
+        fecha1 = datetime.strptime(fecha_ingreso.get(), '%Y-%m-%d').date()
+        fecha2 = datetime.strptime(fecha_salida.get(), '%Y-%m-%d').date()
+        parametros = (fecha1, fecha2)
+        datos = conexion_sql(consulta, parametros)
         for habitacion in datos:
             habitaciones_ocupadas.append(habitacion[0])
-        comboBox_Habitaciones["values"] = sorted(list(set(habitaciones_hotel)- set(habitaciones_ocupadas)))
+        comboBox_Habitaciones["values"] = sorted(list(
+            set(habitaciones_hotel) - set(habitaciones_ocupadas)))
         return comboBox_Habitaciones
     else:
         consulta = """--sql
@@ -303,7 +305,8 @@ def habitaciones_disponibles(evento=""):  # ComboBox de habitaciones disponibles
         datos = conexion_sql(consulta, parametros)
         for habitacion in datos:
             habitaciones_ocupadas.append(habitacion[0])
-        comboBox_Habitaciones["values"] = sorted(list(set(habitaciones_hotel)- set(habitaciones_ocupadas)))
+        comboBox_Habitaciones["values"] = sorted(list(
+            set(habitaciones_hotel) - set(habitaciones_ocupadas)))
         return comboBox_Habitaciones
     
 
@@ -317,8 +320,11 @@ def validar_caracteres(text):
     if not re.match("^[ a-zA-ZÀ-ÿ\u00f1\u00d1]{0,30}$", text):
         return False
     return True
+
+
 def no_redimensionar(event):
     return "break"
+
 
 root = Tk()
 root.title("Hotel Teressitta")
@@ -382,7 +388,7 @@ boton_accion = ttk.Button(formulario, textvariable=boton_variable,
 boton_crear = ttk.Button(herramientas, text="Crear", padding="10 5 10 5",
                          command=setear_forms)
 boton_clientes = ttk.Button(herramientas, text="Clientes", padding="10 5 10 5",
-                         command=leer_cliente)
+                            command=leer_cliente)
 boton_consultar = ttk.Button(herramientas, text="Consultar",
                              padding="10 5 10 5",
                              command=lambda: setear_forms("Consultar"))
@@ -435,25 +441,28 @@ formulario_fecha_salida.grid(column=5, row=1, sticky=W, padx=5)
 boton_accion.grid(column=5, row=2, sticky=W, pady=10)
 boton_crear.grid(column=0, row=0, sticky=W, padx=20)
 boton_actualizar.grid(column=1, row=0, sticky=W, padx=20)
-boton_clientes.grid(column=2,row=0, sticky=W, padx=20)
+boton_clientes.grid(column=2, row=0, sticky=W, padx=20)
 boton_consultar.grid(column=3, row=0, sticky=W, padx=20)
 boton_borrar.grid(column=4, row=0, sticky=W, padx=20)
 
 # Lista de clientes
 arbol = ttk.Treeview(lista_datos)
-#scrollbar
-scrol=ttk.Scrollbar(lista_datos,orient="vertical",command=arbol.yview,)
+
+# Scrollbar
+scrol = ttk.Scrollbar(lista_datos, orient="vertical", command=arbol.yview,)
 arbol.configure(yscrollcommand=scrol)
-arbol['yscrollcommand']=scrol.set
+arbol['yscrollcommand'] = scrol.set
 leer_cliente()
 habitaciones_disponibles()
-formulario_fecha_ingreso.bind("<<DateEntrySelected>>", habitaciones_disponibles)
-formulario_fecha_salida.bind("<<DateEntrySelected>>", habitaciones_disponibles)
+formulario_fecha_ingreso.bind("<<DateEntrySelected>>",
+                              habitaciones_disponibles)
+formulario_fecha_salida.bind("<<DateEntrySelected>>",
+                             habitaciones_disponibles)
 
 arbol['columns'] = ('nombre', 'apellido', 'DNI', 'habitacion',
                     'fecha ingreso', 'fecha salida',)
 arbol.grid(column=0, row=0)
-scrol.grid(column=1, row=0,sticky=(N,S))
+scrol.grid(column=1, row=0, sticky=(N, S))
 arbol.column('#0', width=50, minwidth=10)
 arbol.heading('#0', text='ID')
 arbol.column('nombre', width=120, minwidth=10)
