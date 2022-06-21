@@ -444,6 +444,7 @@ arbol = ttk.Treeview(lista_datos)
 #scrollbar
 scrol=ttk.Scrollbar(lista_datos,orient="vertical",command=arbol.yview,)
 arbol.configure(yscrollcommand=scrol)
+arbol['yscrollcommand']=scrol.set
 leer_cliente()
 habitaciones_disponibles()
 formulario_fecha_ingreso.bind("<<DateEntrySelected>>", habitaciones_disponibles)
