@@ -18,7 +18,7 @@ import re
 """
 
 global id_cliente
-# global habitaciones_hotel
+global habitaciones_hotel
 habitaciones_hotel = ["101", "102", "103", "104", "201", "202",
                       "203", "204", "301", "302", "303", "304"]
 
@@ -119,16 +119,13 @@ def consulta():
     if habitacion.get() != "Seleccionar":
         habitacion_buscar = habitacion.get()
     if len(fecha_ingreso.get()) != 0:
-        fecha_ingreso_buscar = datetime.strptime(fecha_ingreso.get(),
-                                                 '%Y-%m-%d').date()
+        fecha_ingreso_buscar = datetime.strptime(fecha_ingreso.get(),'%Y-%m-%d').date()
     if len(fecha_salida.get()) != 0:
-        fecha_salida_buscar = datetime.strptime(fecha_salida.get(),
-                                                '%Y-%m-%d').date()
+        fecha_salida_buscar = datetime.strptime(fecha_salida.get(),'%Y-%m-%d').date()
 
     parametros = (nombre_buscar, apellido_buscar, dni_buscar,
                   habitacion_buscar, fecha_ingreso_buscar, fecha_salida_buscar)
 
-    # Se borran todos los datos del arbol
     clientes = arbol.get_children()
     for cliente in clientes:
         arbol.delete(cliente)
@@ -149,6 +146,7 @@ def consulta():
         arbol.insert("", "end", text=cliente[0],
                      values=(cliente[1], cliente[2], cliente[3],
                              cliente[4], cliente[5], cliente[6]))
+    setear_forms()
 
 
 def leer_cliente():
@@ -232,6 +230,7 @@ def setear_forms(accion=""):  # Limpiar los formularios
         fecha = str(hoy.strftime("%Y-%m-%d"))
         fecha_ingreso.set(fecha)
         fecha_salida.set(fecha)
+    habitaciones_disponibles()
     setear_etiquetas()
 
 
@@ -268,23 +267,40 @@ def mostrar_datos():  # Enviar los datos del cliente a modificar
     fecha_salida.set(str(cliente['values'][5]))
 
 
-def habitaciones_disponibles():  # ComboBox de habitaciones disponibles
+def habitaciones_disponibles(evento=""):  # ComboBox de habitaciones disponibles
     habitaciones_ocupadas = []
-    consulta = """--sql
-        SELECT habitacion 
-        FROM Clientes 
-        WHERE fechaDeSalida BETWEEN ? AND ?;
-    """
-    fecha1 = datetime.strptime(fecha_ingreso.get(), '%Y-%m-%d').date()
-    fecha2 = datetime.strptime(fecha_salida.get(), '%Y-%m-%d').date()
-    parametros = (fecha1,fecha2)
-    datos = conexion_sql(consulta, parametros)
-    for habitacion in datos:
-        habitaciones_ocupadas.append(habitacion[0])
-    comboBox_Habitaciones["values"] = sorted(list(set(habitaciones_hotel)
-                                             - set(habitaciones_ocupadas)))
-    return comboBox_Habitaciones
-
+    if boton_variable.get()=="Consultar":
+        comboBox_Habitaciones["values"] = habitaciones_hotel
+        return comboBox_Habitaciones
+    elif evento!="" and (datetime.strptime(fecha_ingreso.get(), '%Y-%m-%d').date()<=datetime.strptime(fecha_salida.get(), '%Y-%m-%d').date()):
+        consulta = """--sql
+            SELECT habitacion 
+            FROM Clientes 
+            WHERE fechaDeSalida BETWEEN ? and ?;
+        """
+        fecha1=datetime.strptime(fecha_ingreso.get(), '%Y-%m-%d').date()
+        fecha2=datetime.strptime(fecha_salida.get(), '%Y-%m-%d').date()
+        parametros=(fecha1,fecha2)
+        datos=conexion_sql(consulta, parametros)
+        for habitacion in datos:
+            habitaciones_ocupadas.append(habitacion[0])
+        comboBox_Habitaciones["values"] = sorted(list(set(habitaciones_hotel)- set(habitaciones_ocupadas)))
+        return comboBox_Habitaciones
+    else:
+        consulta = """--sql
+            SELECT habitacion 
+            FROM Clientes 
+            WHERE fechaDeSalida >= ?;
+        """
+        hoy = datetime.now()
+        fecha = hoy.strftime("%Y-%m-%d")
+        parametros = (fecha,)
+        datos = conexion_sql(consulta, parametros)
+        for habitacion in datos:
+            habitaciones_ocupadas.append(habitacion[0])
+        comboBox_Habitaciones["values"] = sorted(list(set(habitaciones_hotel)- set(habitaciones_ocupadas)))
+        return comboBox_Habitaciones
+    
 
 def validar_numeros(text):
     if not re.match("^[0-9]{0,8}$", text):
@@ -419,6 +435,7 @@ arbol = ttk.Treeview(lista_datos)
 leer_cliente()
 habitaciones_disponibles()
 formulario_fecha_ingreso.bind("<<DateEntrySelected>>", habitaciones_disponibles)
+formulario_fecha_salida.bind("<<DateEntrySelected>>", habitaciones_disponibles)
 
 arbol['columns'] = ('nombre', 'apellido', 'DNI', 'habitacion',
                     'fecha ingreso', 'fecha salida',)
