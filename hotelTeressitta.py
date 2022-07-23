@@ -52,7 +52,7 @@ def crear_tabla():
 def validar_datos():  # Validar que los formularios no estén vacíos.
     validar = True
     setear_etiquetas()
-    if not re.match("^[ a-zA-ZÀ-ÿ\u00f1\u00d1]+$", nombre.get()):
+    if not re.match("^[a-zA-ZÀ-ÿ\u00f1\u00d1]+$", nombre.get()):
         validar = False
         if len(nombre.get()) == 0:
             nombre_error.set("Campo vacio")
